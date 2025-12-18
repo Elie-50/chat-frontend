@@ -6,6 +6,7 @@ import NotFound from './pages/NotFound'
 import { Navbar } from './components/navbar'
 import TermsOfService from './pages/TermsOfService'
 import PrivacyPolicy from './pages/PrivacyPolicy'
+import SearchPage from './pages/SearchPage'
 
 function App() {
   return (
@@ -17,7 +18,8 @@ function App() {
           <Route path='/auth' element={<AuthPage />} />
           <Route path='terms-of-service' element={<TermsOfService />} />
           <Route path='/privacy-policy' element={<PrivacyPolicy />} />
-          
+          <Route path='/search' element={<SearchPage />} />
+
           <Route path='*' element={<NotFound />} />
         </Routes>
       </Router>
