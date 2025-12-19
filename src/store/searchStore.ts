@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { api } from "@/lib/api";
 import type { AxiosError } from "axios";
+import type { User } from "@/types/auth";
 
 export interface SearchUser {
 	_id: string;
@@ -34,9 +35,11 @@ interface SearchState {
 	result: Result;
 	error: string | null;
 	loading: boolean;
+	user: Omit<User, 'email'> | null;
 
 	search: (payload: SearchPayload) => Promise<void>;
 	clearSearchState: () => void;
+	findUser: (_id: string) => void;
 	updateUserFollowStatus: (_id: string, newFollowStatus: boolean) => void;
 	toggleUserFollowStatus: (_id: string) => void;
 }
@@ -45,6 +48,7 @@ export const useSearchStore = create<SearchState>((set) => ({
 	result: emptyResult,
 	error: null,
 	loading: false,
+	user: null,
 
 	search: async (payload: SearchPayload) => {
 		try {
@@ -62,7 +66,24 @@ export const useSearchStore = create<SearchState>((set) => ({
 			
 			set({
 				loading: false,
-				error: err.response?.data?.message ?? 'Failed to request code',
+				error: err.response?.data?.message ?? 'Failed to find users',
+			})
+		}
+	},
+
+	findUser: async (_id: string) => {
+		try {
+			set({ loading: true, error: null })
+
+			const res = await api.get<Omit<User, 'email'>>(`/users/${_id}`);
+
+			set({ user: res.data, loading: false });
+		} catch (error) {
+			const err = error as AxiosError<{ message?: string }>
+			
+			set({
+				loading: false,
+				error: err.response?.data?.message ?? 'Failed to find user',
 			})
 		}
 	},

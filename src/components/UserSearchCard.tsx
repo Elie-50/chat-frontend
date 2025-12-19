@@ -2,6 +2,7 @@ import { UserMinus, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { SearchUser } from "@/store/searchStore";
 import { useFollowStore } from "@/store/followStore";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
 	user: SearchUser;
@@ -9,6 +10,7 @@ type Props = {
 
 function UserSearchCard({ user }: Props) {
 	const { loading, error, unfollowUser, followUser } = useFollowStore();
+	const navigate = useNavigate();
 
 	const handleFollowAction = async () => {
 		if (user.isFollowing) {
@@ -18,11 +20,15 @@ function UserSearchCard({ user }: Props) {
 		}
 	}
 
+	const goToPrivateChat = () => {
+		navigate(`/private-chat/${user._id}`);
+	}
+
 	return (
 		<div className="flex items-center justify-between gap-4 rounded-lg border p-3 hover:bg-muted/50">
 			<div className="flex items-center gap-3">
 				<div className="flex flex-col">
-					<span className="text-sm font-medium">
+					<span onClick={goToPrivateChat} className="text-sm font-medium hover:cursor-pointer hover:underline">
 						{user.username}
 					</span>
 					{/* Optional secondary text */}
