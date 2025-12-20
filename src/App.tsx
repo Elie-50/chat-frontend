@@ -8,6 +8,8 @@ import TermsOfService from './pages/TermsOfService'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import SearchPage from './pages/SearchPage'
 import PrivateChatPage from './pages/PrivateChatPage'
+import GroupsPage from './pages/GroupsPage'
+import GroupFormPage from './pages/GroupFormPage'
 
 function App() {
   return (
@@ -21,6 +23,9 @@ function App() {
           <Route path='/privacy-policy' element={<PrivacyPolicy />} />
           <Route path='/search' element={<SearchPage />} />
           <Route path='/private-chat/:recipientId' element={<PrivateChatPage />} />
+          <Route path='/groups' element={<GroupsPage />} />
+          <Route path='/groups/new' element={<GroupFormPage />} />
+          <Route path='/groups/edit/:groupId' element={<GroupFormPage />} />
 
           <Route path='*' element={<NotFound />} />
         </Routes>

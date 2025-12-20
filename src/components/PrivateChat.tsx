@@ -74,11 +74,11 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
     });
 
     // Listen for incoming new messages
-    socket.on('receive:private-message', (data: { message: Message }) => {
+    socket.on('private-message:received', (data: { message: Message }) => {
       setMessages((prev) => [...prev, data.message]);
     });
 
-    socket.on('delete:private-message', (data: { messageId: string }) => {
+    socket.on('private-message:removed', (data: { messageId: string }) => {
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           msg._id === data.messageId ? { 
@@ -90,7 +90,7 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
       );
     });
 
-    socket.on('update:private-message', (data: { message: Message }) => {
+    socket.on('private-message:updated', (data: { message: Message }) => {
       // Update the message content based on the provided messageId
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>

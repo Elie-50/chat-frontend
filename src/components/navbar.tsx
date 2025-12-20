@@ -50,12 +50,8 @@ export const Navbar = () => {
             WhatsKenoun
           </Link>
 
-          <Link
-            to="/search"
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
-          >
-            Search
-          </Link>
+          <Link to="/search" className="nav-link">Search</Link>
+          <Link to="/groups" className="nav-link">Groups</Link>
         </div>
 
         {/* Right: Theme toggle */}

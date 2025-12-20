@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useAuthStore } from '@/store/authStore';
 
-export const BACKEND_URL = '';
+export const BACKEND_URL = window.location.origin.replace(':5173', ':3000');
 
 export const api = axios.create({
   baseURL: BACKEND_URL + '/api',
