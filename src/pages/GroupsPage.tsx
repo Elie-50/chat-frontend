@@ -83,15 +83,16 @@ function GroupItem({ group }: { group: Group }) {
 						</Button>
 					</Link>
         )}
-
-        <Button
-          variant="secondary"
-          size="sm"
-          className="flex items-center gap-2"
-        >
-          <MessageCircleDashed className="h-4 w-4" />
-          Open Chat
-        </Button>
+        <Link to={`/group-chat/${group._id}`}>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <MessageCircleDashed className="h-4 w-4" />
+            Open Chat
+          </Button>
+        </Link>
       </div>
     </div>
   )

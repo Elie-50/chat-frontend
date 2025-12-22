@@ -15,9 +15,9 @@ interface ChatStore {
   socket: Socket | null;
   setMessages: (messages: Message[] | ((prev: Message[]) => Message[]), prepend?: boolean) => void;
   setNewMessage: (message: string) => void;
-  handleSend: (recipientId: string) => void;
-  handleDelete: (messageId: string) => void;
-  handleUpdate: (messageId: string, content: string) => void;
+  handleSend: (id: string, eventName: string) => void;
+  handleDelete: (messageId: string, eventName: string) => void;
+  handleUpdate: (messageId: string, content: string, eventName: string) => void;
   setSocket: (socket: Socket | null) => void;
   clearNewMessage: () => void;
 }
@@ -53,33 +53,33 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   
   setSocket: (socket) => set({ socket }),
   
-  handleSend: (recipientId) => {
+  handleSend: (id, eventName) => {
     const { socket, newMessage, clearNewMessage } = get();
     if (!socket || !newMessage.trim()) return;
 
     // Send the message through the socket
-    socket.emit('send:private-message', {
-      recipientId,
+    socket.emit(eventName, {
+      id,
       content: newMessage,
     });
 
     clearNewMessage(); // Clear the new message input after sending
   },
 
-  handleDelete: (messageId: string) => {
+  handleDelete: (messageId: string, eventName) => {
     const { socket } = get();
 
     if (!socket) return;
-    socket.emit('delete:private-message', {
+    socket.emit(eventName, {
       messageId,
     });
   },
-  handleUpdate: (messageId: string, content: string) => {
+  handleUpdate: (messageId: string, content: string, eventName) => {
     const { socket, clearNewMessage } = get();
     if (!socket || !content.trim()) return;
 
     // Send the message through the socket
-    socket.emit('update:private-message', {
+    socket.emit(eventName, {
       messageId,
       content,
     });
