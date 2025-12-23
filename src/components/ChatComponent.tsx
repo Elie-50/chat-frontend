@@ -1,7 +1,7 @@
 import ChatBubble from './ChatBubble';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { Plus, Send } from 'lucide-react';
+import { Plus, SendHorizonal } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import type { Message } from '@/store/chatStore';
@@ -66,9 +66,46 @@ const Chat: React.FC<ChatProps> = ({
 
       {/* Messages Section */}
       <div className="flex-1 overflow-y-auto mb-4 pt-4">
-        {messages.map((msg) => (
-          <ChatBubble key={msg._id} message={msg} handleUpdate={handleUpdateClicked} handleDelete={deleteMessage} />
-        ))}
+        {messages.map((message, index) => {
+          const nextMessage = messages[index + 1];
+          const prevMessage = messages[index - 1];
+
+          // Check if a date separator is needed (first message or new day)
+          let showDateSeparator = false;
+          if (!prevMessage) {
+            showDateSeparator = true;
+          } else {
+            const prevDate = new Date(prevMessage.createdAt).toDateString();
+            const currDate = new Date(message.createdAt).toDateString();
+            showDateSeparator = prevDate !== currDate;
+          }
+          return (
+          <div key={message._id}>
+            {/* Date separator */}
+            {showDateSeparator && (
+              <div className="flex justify-center my-2">
+                <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs">
+                  {new Date(message.createdAt).toLocaleDateString('en-GB', {
+                    weekday: 'short',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
+              </div>
+            )}
+
+            {/* Message bubble */}
+            <ChatBubble
+              message={message}
+              nextMessage={nextMessage}
+              prevMessage={prevMessage}
+              handleUpdate={handleUpdateClicked}
+              handleDelete={deleteMessage}
+            />
+          </div>
+        );
+        })}
         <div ref={messagesEndRef} />
       </div>
 
@@ -95,10 +132,10 @@ const Chat: React.FC<ChatProps> = ({
             }
           }}
           variant="secondary"
-          className="bg-chart-1 text-foreground hover:bg-chart-1/80 px-4 py-2 rounded-full ml-2"
+          className="bg-bubble text-foreground hover:bg-chart-1/80 px-4 py-2 rounded-full ml-2"
         >
           {newMessage.length > 0 ? (
-            <Send className="w-5 h-5" />
+            <SendHorizonal className="w-5 h-5" />
           ) : (
             <Plus className="w-5 h-5" />
           )}

@@ -9,6 +9,15 @@ export interface SearchUser {
 	isFollowing: boolean;
 }
 
+type Friend = Omit<SearchUser, 'isFollowing'>;
+
+export interface FriendsResult {
+	totalFriends: number;
+	totalPages: number;
+	currentPage: number;
+	friends: Friend[];
+}
+
 interface Result {
 	data: SearchUser[];
 	page: number;
@@ -36,12 +45,14 @@ interface SearchState {
 	error: string | null;
 	loading: boolean;
 	user: Omit<User, 'email'> | null;
+	friendsSearch: FriendsResult,
 
 	search: (payload: SearchPayload) => Promise<void>;
 	clearSearchState: () => void;
 	findUser: (_id: string) => void;
 	updateUserFollowStatus: (_id: string, newFollowStatus: boolean) => void;
 	toggleUserFollowStatus: (_id: string) => void;
+	fetchFriends: (payload: { size: number, page: number }) => Promise<void>;
 }
 
 export const useSearchStore = create<SearchState>((set) => ({
@@ -49,6 +60,12 @@ export const useSearchStore = create<SearchState>((set) => ({
 	error: null,
 	loading: false,
 	user: null,
+	friendsSearch: {
+		totalFriends: 0,
+		totalPages: 0,
+		currentPage: 1,
+		friends: []
+	},
 
 	search: async (payload: SearchPayload) => {
 		try {
@@ -120,5 +137,20 @@ export const useSearchStore = create<SearchState>((set) => ({
 				),
 			},
 		}));
-	} 
+	},
+
+	fetchFriends: async (payload = { page: 1, size: 20 }) => {
+		try {
+			set({ loading: false, error: null });
+			const res = await api.get<FriendsResult>('/follow/me/friends', {
+				params: payload,
+			});
+
+			set({ loading: false, friendsSearch: res.data });
+
+		} catch (error) {
+			const err = error as AxiosError<{ message: string }>;
+			set({ error: err.message, loading: false });
+		}
+	},
 }))

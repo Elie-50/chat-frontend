@@ -4,19 +4,23 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { useAuthStore } from "@/store/authStore"
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { useGroupStore } from "@/store/groupStore";
 import { useNavigate } from "react-router-dom";
 
 function GroupForm({ _id }: { _id?: string }) {
   const { accessToken } = useAuthStore();
-	const { error, loading, createGroup, updateGroup, groups } = useGroupStore();
-	const defaultName = groups?.data.find((grp) => grp._id == _id)?.name || '';
-  const [name, setName] = useState<string>(defaultName);
-	const navigate = useNavigate();
-
+	const { error, loading, createGroup, updateGroup, selectedGroup, findGroupData } = useGroupStore();
+  const [name, setName] = useState<string>(selectedGroup?.name || '');
 	
+  useEffect(() => {
+    if (!selectedGroup && _id && accessToken) {
+      findGroupData(_id);
+    }
+  }, [selectedGroup, _id, accessToken, findGroupData]);
+  
+	const navigate = useNavigate();
 
 	const prompt = _id 
 		? "Well, well, well. Look who's changing their group's name!"

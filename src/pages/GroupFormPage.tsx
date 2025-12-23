@@ -1,4 +1,5 @@
 import GroupForm from "@/components/GroupForm";
+import GroupMemberForm from "@/components/GroupMemberForm";
 import { useParams } from "react-router-dom";
 
 function GroupsForm() {
@@ -6,7 +7,14 @@ function GroupsForm() {
   const _id = params.groupId;
   return (
     <>
-      <GroupForm _id={_id} /> 
+      <div className="flex flex-col lg:flex-row w-full mx-2">
+        <div className="w-full lg:w-1/2">
+          <GroupForm _id={_id} />
+        </div>
+        <div className="w-full lg:w-1/2">
+          <GroupMemberForm id={_id} />
+        </div>
+      </div>
     </>
   )
 }

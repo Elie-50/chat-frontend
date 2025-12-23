@@ -5,7 +5,9 @@ function Homepage() {
 
 	return (
 		<div>
-			Welcome, {user?.username}
+			<h1 className="text-2xl text-center mt-2">
+				Welcome, {user?.username}
+			</h1>
 		</div>
 	)
 }

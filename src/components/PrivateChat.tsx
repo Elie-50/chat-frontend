@@ -6,12 +6,14 @@ import { useSearchStore } from '@/store/searchStore';
 import { BACKEND_URL } from '@/lib/api';
 import Chat from './ChatComponent';
 
+const messageAudio = new Audio('/sounds/live-chat.mp3');
+
 interface PrivateChatProps {
   recipientId: string;
 }
 
 const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
-  const { accessToken } = useAuthStore();
+  const { accessToken, user } = useAuthStore();
   const { user: recipient, findUser } = useSearchStore();
   const { 
     messages, 
@@ -71,6 +73,11 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
     // Listen for incoming new messages
     socket.on('private-message:received', (data: { message: Message }) => {
       setMessages((prev) => [...prev, data.message]);
+
+      if (data.message.sender != user?.username) {
+        messageAudio.currentTime = 0;
+        messageAudio.play().catch(() => {});
+      }
     });
 
     socket.on('private-message:removed', (data: { messageId: string }) => {
@@ -105,7 +112,7 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
     return () => {
       socket.disconnect();
     };
-  }, [recipientId, accessToken, setSocket, setMessages, page]);
+  }, [recipientId, accessToken, setSocket, setMessages, page, user]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {

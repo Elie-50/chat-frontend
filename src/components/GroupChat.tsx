@@ -4,6 +4,9 @@ import { useAuthStore } from '@/store/authStore';
 import { BACKEND_URL } from '@/lib/api';
 import { useChatStore, type Message } from '@/store/chatStore';
 import Chat from './ChatComponent';
+import { useGroupStore } from '@/store/groupStore';
+
+const messageAudio = new Audio('/sounds/live-chat.mp3');
 
 interface GroupChatProps {
   conversationId: string;
@@ -21,6 +24,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
     handleDelete,
     handleUpdate,
   } = useChatStore();
+  const { findGroupData, selectedGroup } = useGroupStore();
 
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -33,6 +37,12 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (accessToken && conversationId) {
+      findGroupData(conversationId)
+    }
+  }, [accessToken, findGroupData, conversationId])
 
   useEffect(() => {
     if (!accessToken) return;
@@ -66,6 +76,11 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
     // Listen for incoming new messages
     socket.on('group-message:received', (data: { message: Message }) => {
       setMessages((prev) => [...prev, data.message]);
+
+      if (data.message.sender != user?.username) {
+        messageAudio.currentTime = 0;
+        messageAudio.play().catch(() => {});
+      }
     });
 
     socket.on('group-message:removed', (data: { message: Message }) => {
@@ -159,7 +174,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
   return (
     <Chat 
       _id={conversationId}
-      title='Group Chat'
+      title={selectedGroup?.name || 'Group Chat'}
       loadEarlierMessages={loadEarlierMessages}
       newMessage={newMessage}
       setNewMessage={setNewMessage}

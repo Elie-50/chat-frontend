@@ -7,6 +7,7 @@ export interface Message {
   sender: string;
   modification?: string;
   conversation?: { _id: string };
+  createdAt: string;
 }
 
 interface ChatStore {
