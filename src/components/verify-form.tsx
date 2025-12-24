@@ -40,7 +40,7 @@ function VerifyForm() {
           <FieldLabel htmlFor="code">Verification Code</FieldLabel>
           <Input
             id="code"
-            type="text"
+            type="number"
             placeholder="123456"
             value={code}
             onChange={(e) => setCode(e.target.value)}
