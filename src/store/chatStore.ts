@@ -15,6 +15,7 @@ interface ChatStore {
   newMessage: string;
   socket: Socket | null;
   setMessages: (messages: Message[] | ((prev: Message[]) => Message[]), prepend?: boolean) => void;
+  clearPreviousMessages: () => void;
   setNewMessage: (message: string) => void;
   handleSend: (id: string, eventName: string) => void;
   handleDelete: (messageId: string, eventName: string) => void;
@@ -48,6 +49,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return { messages: uniqueMessages };
     }
   }),
+
+  clearPreviousMessages: () => {
+    set({ messages: [] });
+  },
 
   setNewMessage: (newMessage) => set({ newMessage }),
   clearNewMessage: () => set({ newMessage: '' }),

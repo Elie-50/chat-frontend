@@ -70,6 +70,8 @@ function SearchPage() {
 
     pages.push(total); // last page always visible
 
+		console.log('pages:', pages); 
+
     return pages;
   };
 
@@ -84,14 +86,14 @@ function SearchPage() {
 				<div className="mb-6">
 					<InputGroup>
 						<InputGroupInput
-							placeholder="Search movies..."
+							placeholder="Search friends..."
 							value={username}
 							onChange={(e) => setUsername(e.target.value)}
 						/>
 						<InputGroupAddon>
 							<Search className="w-4 h-4 text-muted-foreground" />
 						</InputGroupAddon>
-						{result?.total && (
+						{(result?.total > 0) && (
 							<InputGroupAddon align="inline-end">
 								{result.total} result
 								{result.total > 1 ? "s" : ""}
@@ -102,18 +104,19 @@ function SearchPage() {
 
 				{loading && <Loading />}
 				{error && <p className="text-destructive">Error: {error}</p>}
-				{!loading && !error && result?.data?.length === 0 && <p>No results found.</p>}
+				{(!loading && !error && result?.data?.length === 0) && (
+					<p className="text-muted-foreground text-center">No results found.</p>
+				)}
 
 				{/* Results Grid */}
-				<div className="">
+				<div className="gap-2">
 					{result?.data?.map((user) => (
 							<UserSearchCard key={user._id} user={user} />
 					))}
 				</div>
-
 				
 				{/* Pagination */}
-				{result?.total && result.total > 10 && (() => {
+				{(result && result.total > 10) && (() => {
 					const totalPages = Math.ceil(result.total / 10);
 					const pages = getPages(page, totalPages);
 

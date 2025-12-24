@@ -32,7 +32,6 @@ function GroupsPage() {
 
 export default GroupsPage
 
-
 function GroupsDisplay({ groups }: { groups: GroupSearch }) {
   return (
     <div className="py-8 px-4 max-w-7xl mx-auto">

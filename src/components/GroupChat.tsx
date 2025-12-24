@@ -23,6 +23,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
     setSocket, 
     handleDelete,
     handleUpdate,
+    clearPreviousMessages,
   } = useChatStore();
   const { findGroupData, selectedGroup } = useGroupStore();
 
@@ -32,6 +33,10 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [page, setPage] = useState(1);
   const size = 20;
+
+  useEffect(() => {
+    clearPreviousMessages();
+  }, [])
 
   // Scroll to bottom when messages update
   useEffect(() => {

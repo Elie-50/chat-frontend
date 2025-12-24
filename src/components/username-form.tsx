@@ -4,25 +4,39 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { useAuthStore } from "@/store/authStore"
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Input } from "./ui/input";
 
 function UsernameForm() {
-  const { error, loading, updateUser } = useAuthStore()
+  const { error, loading, updateUser, user, refreshToken } = useAuthStore()
   const [username, setUsername] = useState<string>('');
+  const [status, setStatus] = useState<string>('');
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 
 		await updateUser({ username });
+    if (!error) {
+      setStatus('Username updated successfully');
+    }
 	}
+
+  useEffect(() => {
+    if (!user) {
+      refreshToken();
+    }
+  }, [user, refreshToken]);
+
+  const prompt = user?.username 
+    ? "Wanna change your name?"
+    : "Your username is blank!"
 
   return (
     <div className="w-full max-w-md mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Header */}
         <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold">Your username is blank!</h1>
+          <h1 className="text-2xl font-bold">{prompt}</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Please fill the form below to set your username.
           </p>
@@ -44,6 +58,10 @@ function UsernameForm() {
         {/* Error */}
         {error && (
           <p className="text-red-500 text-center font-semibold">{error}</p>
+        )}
+
+        {status && (
+          <p className="text-muted-foreground text-center">{status}</p>
         )}
 
         {/* Submit Button */}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Moon, Sun } from 'lucide-react'
+import { LogOut, Moon, Sun } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 
 type Theme = 'dark' | 'light'
@@ -10,9 +10,19 @@ export const Navbar = () => {
     (localStorage.getItem('theme') as Theme) || 'dark'
   )
 
-  const { user, accessToken, refreshToken, error } = useAuthStore()
-  const navigate = useNavigate()
+  const { user, accessToken, refreshToken, error, accessTokenExpiresAt, logout } = useAuthStore()
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      if (accessToken && accessTokenExpiresAt && Date.now() > accessTokenExpiresAt - 1 * 60 * 1000) {
+        refreshToken();
+      }
+    }, 30000);
+
+    return () => clearInterval(refreshInterval)
+  }, [accessToken, accessTokenExpiresAt, refreshToken])
+  
   useEffect(() => {
     if (!accessToken && !user) {
       refreshToken()
@@ -37,6 +47,14 @@ export const Navbar = () => {
     localStorage.setItem('theme', newTheme)
   }
 
+  const handleLogout = async () => {
+    await logout();
+
+    if (!error) {
+      navigate('/auth');
+    }
+  }
+
   return (
     <nav className="w-full border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
       <div className="mx-auto px-4 py-2 flex items-center justify-between">
@@ -55,17 +73,27 @@ export const Navbar = () => {
         </div>
 
         {/* Right: Theme toggle */}
-        <button
-          onClick={toggleTheme}
-          className="rounded-md p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-          aria-label="Toggle theme"
-        >
-          {theme === 'light' ? (
-            <Moon className="h-6 w-6 text-zinc-800" />
-          ) : (
-            <Sun className="h-6 w-6 text-zinc-100" />
-          )}
-        </button>
+        <div>
+          <button
+            onClick={toggleTheme}
+            className="rounded-md p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            aria-label="Toggle theme"
+          >
+            {theme === 'light' ? (
+              <Moon className="h-6 w-6 text-muted-foreground" />
+            ) : (
+              <Sun className="h-6 w-6 text-muted-foreground" />
+            )}
+          </button>
+
+          <button
+            aria-label='Logout'
+            onClick={handleLogout}
+            className="rounded-lg p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+          >
+            <LogOut className="h-6 w-6 text-muted-foreground rotate-180" />
+          </button>
+        </div>
 
       </div>
     </nav>

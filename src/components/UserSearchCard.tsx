@@ -25,7 +25,7 @@ function UserSearchCard({ user }: Props) {
 	}
 
 	return (
-		<div className="flex items-center justify-between gap-4 rounded-lg border p-3 hover:bg-muted/50">
+		<div className="flex items-center mt-1 justify-between gap-4 rounded-lg border p-3 hover:bg-muted/50">
 			<div className="flex items-center gap-3">
 				<div className="flex flex-col">
 					<span onClick={goToPrivateChat} className="text-sm font-medium hover:cursor-pointer hover:underline">
@@ -56,7 +56,7 @@ function UserSearchCard({ user }: Props) {
 					</>
 				}
 			</Button>
-			{error && <p className="text-red-500">{error}</p>}
+			{error && <p className="text-red-500">Error {error}</p>}
 		</div>
 	)
 }

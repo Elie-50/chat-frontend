@@ -24,6 +24,7 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
     setSocket, 
     handleDelete,
     handleUpdate,
+    clearPreviousMessages,
   } = useChatStore();
 
   const socketRef = useRef<Socket | null>(null);
@@ -37,6 +38,10 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    clearPreviousMessages();
+  }, [])
 
   useEffect(() => {
     if (accessToken) {
