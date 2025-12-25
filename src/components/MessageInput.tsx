@@ -8,7 +8,7 @@ type MessgeInputProps = {
 	value: string;
 	changeValue: (value: string) => void;
 	handleSend: () => void;
-	repliedMessage: Message | null;
+	repliedMessage: Message | null | undefined;
 	setRepliedMessage: (message: Message | null) => void;
 }
 function MessageInput({ value, changeValue, handleSend, repliedMessage, setRepliedMessage }: MessgeInputProps) {
@@ -19,7 +19,7 @@ function MessageInput({ value, changeValue, handleSend, repliedMessage, setRepli
 	}
 
 	return (
-		<div>
+		<div className="fixed bottom-0 left-0 p-3 rounded-t-2xl bg-background w-full m-0">
 			{repliedMessage && (
 				<div className="flex items-center bg-input p-2 rounded-lg mb-2">
 					<div className="grow">

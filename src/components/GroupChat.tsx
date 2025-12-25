@@ -30,7 +30,6 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
   const { findGroupData, selectedGroup } = useGroupStore();
 
   const socketRef = useRef<Socket | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [updatingMessageId, setUpdatingMessageId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -39,11 +38,6 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
   useEffect(() => {
     clearPreviousMessages();
   }, [clearPreviousMessages]);
-
-  // Scroll to bottom when messages update
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   useEffect(() => {
     if (accessToken && conversationId) {
@@ -70,6 +64,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
 
     // Listen for messages
     socket.on('group-messages:found', (data: ResultPagination) => {
+      console.log(data);
 			setTotalPages(data.totalPages);
       if (page === 1) {
         // If it's the first page, reset the messages
@@ -186,7 +181,6 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
       setIsDialogOpen={setIsDialogOpen}
       handleDialogSubmit={handleDialogSubmit}
       deleteMessage={deleteMessage}
-      messagesEndRef={messagesEndRef}
     />  
   );
 };

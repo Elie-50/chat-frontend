@@ -30,16 +30,11 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
   } = useChatStore();
 
   const socketRef = useRef<Socket | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  
   const [updatingMessageId, setUpdatingMessageId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [page, setPage] = useState(1);
   const size = 20;
-
-  // Scroll to bottom when messages update
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   useEffect(() => {
     clearPreviousMessages();
@@ -68,6 +63,7 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
 
     // Listen for messages
     socket.on('conversation-messages', (data: ResultPagination) => {
+      console.log(data);
       setTotalPages(data.totalPages);
       if (page === 1) {
         // If it's the first page, reset the messages
@@ -186,7 +182,6 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
       setIsDialogOpen={setIsDialogOpen}
       handleDialogSubmit={handleDialogSubmit}
       deleteMessage={deleteMessage}
-      messagesEndRef={messagesEndRef}
     />
   );
 };

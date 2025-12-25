@@ -10,8 +10,12 @@ export interface Message {
   createdAt: string;
   reply?: {
     _id: string;
-    sender: string;
+    sender: {
+      _id: string;
+      username: string;
+    };
     content: string;
+    modification?: string;
   }
 }
 
@@ -28,6 +32,9 @@ interface ChatStore {
   newMessage: string;
   socket: Socket | null;
   totalPages: number;
+  reply: Message | null | undefined;
+  
+  setReply: (message: Message | null | undefined) => void;
   setTotalPages: (tp: number) => void;
   setMessages: (messages: Message[] | ((prev: Message[]) => Message[]), prepend?: boolean) => void;
   clearPreviousMessages: () => void;
@@ -44,6 +51,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   newMessage: '',
   socket: null,
   totalPages: 0,
+  reply: undefined,
+
+  setReply: (message) => {
+    set({ reply: message });
+  },
 
   setTotalPages: (tp) => {
     set({ totalPages: tp });
@@ -80,16 +92,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setSocket: (socket) => set({ socket }),
   
   handleSend: (id, eventName) => {
-    const { socket, newMessage, clearNewMessage } = get();
+    const { socket, newMessage, clearNewMessage, reply, setReply } = get();
     if (!socket || !newMessage.trim()) return;
+    console.log(reply?._id);
 
     // Send the message through the socket
     socket.emit(eventName, {
       id,
       content: newMessage,
+      repliedTo: reply?._id,
     });
 
-    clearNewMessage(); // Clear the new message input after sending
+    clearNewMessage();
+    setReply(undefined);
   },
 
   handleDelete: (messageId: string, eventName) => {

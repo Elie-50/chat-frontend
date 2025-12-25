@@ -3,9 +3,10 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { DialogTitle } from '@radix-ui/react-dialog';
-import type { Message } from '@/store/chatStore';
-import { useState, type Ref } from 'react';
+import { useChatStore, type Message } from '@/store/chatStore';
+import { useEffect, useRef } from 'react';
 import MessageInput from './MessageInput';
+import { cn } from '@/lib/utils';
 
 interface ChatProps {
 	_id: string,
@@ -26,7 +27,6 @@ interface ChatProps {
 	setIsDialogOpen: (open: boolean) => void;
 	handleDialogSubmit: () => void;
 	handleDialogClose: () => void;
-	messagesEndRef?: Ref<HTMLDivElement>;
 }
 
 const Chat: React.FC<ChatProps> = ({ 
@@ -46,9 +46,15 @@ const Chat: React.FC<ChatProps> = ({
 	setIsDialogOpen,
 	handleDialogSubmit,
 	handleDialogClose,
-	messagesEndRef,
 }) => {
-  const [repliedMessage, setRepliedMessage] = useState<Message | null>(null);
+  const { reply, setReply } = useChatStore();
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll to bottom when messages update
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, reply]);
+  
   const send = () => {
     if (!newMessage.trim()) return;
 
@@ -59,8 +65,15 @@ const Chat: React.FC<ChatProps> = ({
     }
   }
 
+  const scrollMessageIntoView = (messageId: string) => {
+    const messageElement = document.querySelector(`[data-id='${messageId}']`);
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   const changeRepliedMessage = (message: Message | null) => {
-    setRepliedMessage(message);
+    setReply(message);
   }
 
   return (
@@ -82,7 +95,12 @@ const Chat: React.FC<ChatProps> = ({
       </div>
 
       {/* Messages Section */}
-      <div className="flex-col-reverse overflow-y-auto mb-4 pt-4">
+      <div 
+        className={cn(
+          "flex-col-reverse overflow-y-auto pt-4",
+          reply ? 'mb-40' : 'mb-20',
+        )}
+      >
         {messages.map((message, index) => {
           const nextMessage = messages[index + 1];
           const prevMessage = messages[index - 1];
@@ -121,16 +139,17 @@ const Chat: React.FC<ChatProps> = ({
               handleUpdate={handleUpdateClicked}
               handleDelete={deleteMessage}
               setRepliedMessage={changeRepliedMessage}
+              scrollMessageIntoView={scrollMessageIntoView}
             />
           </div>
         );
         })}
-        <div ref={messagesEndRef} />
+        
       </div>
-
+      <div ref={messagesEndRef} />
       {/* Input Section */}
       <MessageInput
-        repliedMessage={repliedMessage}
+        repliedMessage={reply}
         setRepliedMessage={changeRepliedMessage}
         value={newMessage}
         changeValue={setNewMessage}

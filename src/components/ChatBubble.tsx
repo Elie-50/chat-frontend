@@ -19,6 +19,7 @@ type Props = {
   handleUpdate: (_id: string) => void;
   handleDelete: (_id: string) => void;
   setRepliedMessage: (message: Message | null) => void;
+  scrollMessageIntoView: (id: string) => void;
 };
 
 function ChatBubble({
@@ -29,6 +30,7 @@ function ChatBubble({
   handleUpdate,
   handleDelete,
   setRepliedMessage,
+  scrollMessageIntoView,
 }: Props) {
   const { user } = useAuthStore();
   const isOwnMessage = user?.username === message.sender;
@@ -103,6 +105,7 @@ function ChatBubble({
   }
 
   const uniqueColor = stringToColor(message.sender);
+  const replyColor = stringToColor(message.reply?.sender.username || '');
 
   const formattedDate = new Date(message.createdAt).toLocaleTimeString(
     "en-GB",
@@ -127,6 +130,7 @@ function ChatBubble({
       5 * 60 * 1000;
   return (
     <div
+      data-id={message._id}
       className={`flex ${
         isOwnMessage ? "justify-end" : "justify-start"
       } px-3 py-1`}
@@ -231,16 +235,25 @@ function ChatBubble({
               This message was {" "} {message.modification.toLowerCase()}
             </span>
           ) : (
-            <div className="text-base leading-relaxed wrap-break-word max-w-full">
+            <div className={`text-base leading-relaxed wrap-break-word max-w-full ${message.reply && 'w-full'}`}>
               {/* Reply */}
               {message.reply && (
                 <div
-                  style={{
-                    borderLeft: `4px solid ${stringToColor(message.reply.sender)}`,
-                  }}
+                style={{
+                  borderLeft: `4px solid ${replyColor}`,
+                }}
                 className="border-l-4 w-full rounded-lg p-3 mb-2 bg-input/50 text-foreground font-medium italic"
+                onClick={() => scrollMessageIntoView(message.reply?._id as string)}
                 >
-                  <p className="text-sm text-muted-foreground font-semibold">Replying to {message.reply.sender}</p>
+                  <p className="text-sm text-muted-foreground font-semibold">Replying to {" "}
+                    <span
+                      style={{
+                        color: replyColor,
+                      }}
+                    >
+                      {message.reply.sender.username}
+                    </span>
+                  </p>
                   <p className="mt-1">{message.reply.content}</p>
                 </div>
               )}
