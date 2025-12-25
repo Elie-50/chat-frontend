@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@/store/authStore';
-import { useChatStore, type Message } from '@/store/chatStore';
+import { useChatStore, type Message, type ResultPagination } from '@/store/chatStore';
 import { useSearchStore } from '@/store/searchStore';
 import { BACKEND_URL } from '@/lib/api';
 import Chat from './ChatComponent';
@@ -25,6 +25,8 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
     handleDelete,
     handleUpdate,
     clearPreviousMessages,
+    totalPages,
+    setTotalPages,
   } = useChatStore();
 
   const socketRef = useRef<Socket | null>(null);
@@ -41,7 +43,7 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
 
   useEffect(() => {
     clearPreviousMessages();
-  }, [])
+  }, [clearPreviousMessages])
 
   useEffect(() => {
     if (accessToken) {
@@ -65,7 +67,8 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
     socket.emit('find:private-messages', { recipientId, page: page, size });
 
     // Listen for messages
-    socket.on('conversation-messages', (data: { data: Message[] }) => {
+    socket.on('conversation-messages', (data: ResultPagination) => {
+      setTotalPages(data.totalPages);
       if (page === 1) {
         // If it's the first page, reset the messages
         setMessages(data.data);
@@ -117,19 +120,7 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
     return () => {
       socket.disconnect();
     };
-  }, [recipientId, accessToken, setSocket, setMessages, page, user]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      if (!newMessage.trim()) return;
-
-      if (updatingMessageId) {
-        handleUpdate(updatingMessageId, newMessage, 'update:private-message');
-      } else {
-        handleSend(recipientId, 'send:private-message');
-      }
-    }
-  };
+  }, [recipientId, accessToken, setSocket, setMessages, page, user, setTotalPages]);
 
   const handleUpdatingClicked = (_id: string) => {
     setUpdatingMessageId(_id);
@@ -184,7 +175,8 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
       newMessage={newMessage}
       setNewMessage={setNewMessage}
       messages={messages}
-      handleKeyDown={handleKeyDown}
+      page={page}
+      totalPages={totalPages}
       handleSend={sendMessage}
       handleDialogClose={handleDialogClose}
       handleUpdate={updateMessage}

@@ -9,24 +9,31 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Ban, CornerDownLeft, MoreHorizontal, Pencil, Trash } from "lucide-react";
 import type { Message } from "@/store/chatStore";
+import { stringToColor } from "@/lib/utils";
 
 type Props = {
   message: Message;
+  admin?: string;
   nextMessage?: Message;
   prevMessage?: Message;
   handleUpdate: (_id: string) => void;
   handleDelete: (_id: string) => void;
+  setRepliedMessage: (message: Message | null) => void;
 };
 
 function ChatBubble({
   message,
+  admin,
   nextMessage,
   prevMessage,
   handleUpdate,
   handleDelete,
+  setRepliedMessage,
 }: Props) {
   const { user } = useAuthStore();
   const isOwnMessage = user?.username === message.sender;
+  const isAdmin = admin && admin === user?._id;
+  const isDeleted = message.modification?.includes('Deleted');
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [, setPressed] = useState(false);
@@ -47,17 +54,28 @@ function ChatBubble({
     },
   });
 
-  function onPointerDown(e: React.PointerEvent) {
-    startX.current = e.clientX;
-    startY.current = e.clientY;
+  const changeRepliedMessage = () => {
+    setRepliedMessage(message);
+  }
+
+  function onTouchStart(e: React.TouchEvent<HTMLDivElement>) {
+    const touch = e.touches[0];
+    
+    startX.current = touch.clientX;
+    startY.current = touch.clientY;
     isSwiping.current = false;
 
     longPressHandlers.onPointerDown();
   }
 
-  function onPointerMove(e: React.PointerEvent) {
-    const dx = e.clientX - startX.current;
-    const dy = e.clientY - startY.current;
+  function onTouchMove(e: React.TouchEvent<HTMLDivElement>) {
+    if (isDeleted) {
+      return;
+    }
+    const touch = e.touches[0];
+
+    const dx = touch.clientX - startX.current;
+    const dy = touch.clientY - startY.current;
 
     // If user is scrolling vertically, abort swipe
     if (Math.abs(dy) > Math.abs(dx)) {
@@ -73,33 +91,15 @@ function ChatBubble({
     }
   }
 
-  function onPointerUp() {
+  function onTouchStop() {
     longPressHandlers.onPointerUp();
 
     if (isSwiping.current && swipeX > 60) {
-      navigator.vibrate?.(5);
-      console.log("Reply to:", message._id);
+      changeRepliedMessage();
     }
 
     setSwipeX(0);
     isSwiping.current = false;
-  }
-
-  function stringToColor(str: string) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-      hash = hash & hash; // keep 32-bit integer
-    }
-
-    // More variation in hue
-    const hue = Math.abs(hash) % 360;
-
-    // Vary saturation and lightness based on hash to get more distinct colors
-    const saturation = 50 + (Math.abs(hash) % 30); // 50% - 79%
-    const lightness = 40 + (Math.abs(hash) % 20);  // 40% - 59%
-
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
 
   const uniqueColor = stringToColor(message.sender);
@@ -132,16 +132,16 @@ function ChatBubble({
       } px-3 py-1`}
     >
       <div
-        className={`relative rounded-xl px-4 py-3 max-w-[85%] lg:max-w-md
-        ${isOwnMessage ? "bg-bubble text-foreground" : "bg-input text-foreground"}
+        className={`relative rounded-xl px-4 py-3 max-w-[85%] lg:max-w-md text-foreground
+        ${isOwnMessage ? "bg-bubble " : "bg-input"}
         ${isGrouped ? "mb-0" : "mb-1"}
         transition-transform duration-150
         group select-none touch-pan-y`}
         style={{ transform: `translateX(${swipeX}px)` }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchStop}
+        onTouchCancel={onTouchStop}
       >
         {swipeX > 20 && (
           <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -172,7 +172,7 @@ function ChatBubble({
         )}
 
         {/* Menu (hidden until hover / tap) */}
-        {isOwnMessage && (
+        {!isDeleted && (
           <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
             <DropdownMenuTrigger asChild>
               <button
@@ -184,23 +184,33 @@ function ChatBubble({
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
+              {isOwnMessage && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    handleUpdate(message._id);
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Pencil />
+                  Edit
+                </DropdownMenuItem>
+              )}
+              {(isOwnMessage || isAdmin) && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    handleDelete(message._id);
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Trash />
+                  Delete
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
-                onClick={() => {
-                  handleUpdate(message._id);
-                  setMenuOpen(false);
-                }}
+                onClick={changeRepliedMessage}
               >
-                <Pencil />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  handleDelete(message._id);
-                  setMenuOpen(false);
-                }}
-              >
-                <Trash />
-                Delete
+                <CornerDownLeft />
+                Reply
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -215,15 +225,30 @@ function ChatBubble({
 
         {/* Message content + footer */}
         <div className="flex flex-wrap items-end gap-x-2">
-          {message.modification === "Deleted" ? (
+          {(message.modification?.includes('Deleted')) ? (
             <span className="flex items-center gap-2 text-muted-foreground text-sm italic wrap-break-word">
               <Ban className="w-4 h-4" />
-              This message was deleted
+              This message was {" "} {message.modification.toLowerCase()}
             </span>
           ) : (
-            <span className="text-base leading-relaxed wrap-break-word max-w-full">
-              {message.content}
-            </span>
+            <div className="text-base leading-relaxed wrap-break-word max-w-full">
+              {/* Reply */}
+              {message.reply && (
+                <div
+                  style={{
+                    borderLeft: `4px solid ${stringToColor(message.reply.sender)}`,
+                  }}
+                className="border-l-4 w-full rounded-lg p-3 mb-2 bg-input/50 text-foreground font-medium italic"
+                >
+                  <p className="text-sm text-muted-foreground font-semibold">Replying to {message.reply.sender}</p>
+                  <p className="mt-1">{message.reply.content}</p>
+                </div>
+              )}
+              {/* Actual content */}
+              <span>
+                {message.content}
+              </span>
+            </div>
           )}
 
           <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">

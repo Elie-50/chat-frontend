@@ -8,12 +8,27 @@ export interface Message {
   modification?: string;
   conversation?: { _id: string };
   createdAt: string;
+  reply?: {
+    _id: string;
+    sender: string;
+    content: string;
+  }
+}
+
+export interface ResultPagination {
+  data: Message[];
+  page: number;
+  totalPages: number;
+  size: number;
+  total: number;
 }
 
 interface ChatStore {
   messages: Message[];
   newMessage: string;
   socket: Socket | null;
+  totalPages: number;
+  setTotalPages: (tp: number) => void;
   setMessages: (messages: Message[] | ((prev: Message[]) => Message[]), prepend?: boolean) => void;
   clearPreviousMessages: () => void;
   setNewMessage: (message: string) => void;
@@ -28,6 +43,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   messages: [],
   newMessage: '',
   socket: null,
+  totalPages: 0,
+
+  setTotalPages: (tp) => {
+    set({ totalPages: tp });
+  },
   
   setMessages: (messages, prepend = false) => set((state) => {
     if (typeof messages === 'function') {

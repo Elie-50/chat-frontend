@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@/store/authStore';
 import { BACKEND_URL } from '@/lib/api';
-import { useChatStore, type Message } from '@/store/chatStore';
+import { useChatStore, type Message, type ResultPagination } from '@/store/chatStore';
 import Chat from './ChatComponent';
 import { useGroupStore } from '@/store/groupStore';
 
@@ -24,6 +24,8 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
     handleDelete,
     handleUpdate,
     clearPreviousMessages,
+    totalPages,
+    setTotalPages
   } = useChatStore();
   const { findGroupData, selectedGroup } = useGroupStore();
 
@@ -36,7 +38,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
 
   useEffect(() => {
     clearPreviousMessages();
-  }, [])
+  }, [clearPreviousMessages]);
 
   // Scroll to bottom when messages update
   useEffect(() => {
@@ -67,8 +69,8 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
 		}
 
     // Listen for messages
-    socket.on('group-messages:found', (data: { data: Message[] }) => {
-			console.log(data);
+    socket.on('group-messages:found', (data: ResultPagination) => {
+			setTotalPages(data.totalPages);
       if (page === 1) {
         // If it's the first page, reset the messages
         setMessages(data.data);
@@ -122,19 +124,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
     return () => {
       socket.disconnect();
     };
-  }, [accessToken, setSocket, setMessages, page, user, conversationId]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      if (!newMessage.trim()) return;
-
-      if (updatingMessageId) {
-        handleUpdate(updatingMessageId, newMessage, 'update:group-message');
-      } else {
-        handleSend(conversationId, 'send:group-message');
-      }
-    }
-  };
+  }, [accessToken, setSocket, setMessages, page, user, conversationId, setTotalPages]);
 
   const sendMessage = (id: string) => {
     handleSend(id, 'send:group-message');
@@ -180,11 +170,13 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
     <Chat 
       _id={conversationId}
       title={selectedGroup?.name || 'Group Chat'}
+      admin={selectedGroup?.admin}
       loadEarlierMessages={loadEarlierMessages}
       newMessage={newMessage}
       setNewMessage={setNewMessage}
       messages={messages}
-      handleKeyDown={handleKeyDown}
+      page={page}
+      totalPages={totalPages}
       handleSend={sendMessage}
       handleDialogClose={handleDialogClose}
       handleUpdate={updateMessage}

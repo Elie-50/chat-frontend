@@ -1,22 +1,24 @@
 import ChatBubble from './ChatBubble';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { Plus, SendHorizonal } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import type { Message } from '@/store/chatStore';
-import { type Ref } from 'react';
+import { useState, type Ref } from 'react';
+import MessageInput from './MessageInput';
 
 interface ChatProps {
 	_id: string,
   title: string;
+  admin?: string;
 	loadEarlierMessages: () => void;
 	messages: Message[];
+  page: number;
+  totalPages: number;
 	handleUpdateClicked: (messageId: string) => void;
 	deleteMessage: (messageId: string) => void;
 	newMessage: string;
 	setNewMessage: (value: string) => void;
-	handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void,
 	updatingMessageId: string | null;
 	handleUpdate: (messageId: string, newValue: string) => void;
 	handleSend: (_id: string) => void;
@@ -30,13 +32,13 @@ interface ChatProps {
 const Chat: React.FC<ChatProps> = ({ 
 	_id,
 	title,
+  admin,
 	loadEarlierMessages,
 	messages,
 	handleUpdateClicked,
 	deleteMessage,
 	newMessage,
 	setNewMessage,
-	handleKeyDown,
 	updatingMessageId,
 	handleUpdate,
 	handleSend,
@@ -46,6 +48,21 @@ const Chat: React.FC<ChatProps> = ({
 	handleDialogClose,
 	messagesEndRef,
 }) => {
+  const [repliedMessage, setRepliedMessage] = useState<Message | null>(null);
+  const send = () => {
+    if (!newMessage.trim()) return;
+
+    if (updatingMessageId) {
+      handleUpdate(updatingMessageId, newMessage);
+    } else {
+      handleSend(_id);
+    }
+  }
+
+  const changeRepliedMessage = (message: Message | null) => {
+    setRepliedMessage(message);
+  }
+
   return (
     <div className="flex flex-col w-full max-w-5xl min-h-[85vh] mx-auto shadow-md rounded-lg p-4 mt-2 bg-card h-auto sm:h-125 md:h-150">
       {/* Fixed Header */}
@@ -65,7 +82,7 @@ const Chat: React.FC<ChatProps> = ({
       </div>
 
       {/* Messages Section */}
-      <div className="flex-1 overflow-y-auto mb-4 pt-4">
+      <div className="flex-col-reverse overflow-y-auto mb-4 pt-4">
         {messages.map((message, index) => {
           const nextMessage = messages[index + 1];
           const prevMessage = messages[index - 1];
@@ -98,10 +115,12 @@ const Chat: React.FC<ChatProps> = ({
             {/* Message bubble */}
             <ChatBubble
               message={message}
+              admin={admin}
               nextMessage={nextMessage}
               prevMessage={prevMessage}
               handleUpdate={handleUpdateClicked}
               handleDelete={deleteMessage}
+              setRepliedMessage={changeRepliedMessage}
             />
           </div>
         );
@@ -110,37 +129,13 @@ const Chat: React.FC<ChatProps> = ({
       </div>
 
       {/* Input Section */}
-      <div className="flex">
-        <Input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
-          className="flex-1 border rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <Button
-					onMouseDown={(e) => e.preventDefault()}
-  				onTouchStart={(e) => e.preventDefault()}
-          onClick={() => {
-            if (!newMessage.trim()) return;
-
-            if (updatingMessageId) {
-              handleUpdate(updatingMessageId, newMessage);
-            } else {
-              handleSend(_id);
-            }
-          }}
-          variant="secondary"
-          className="bg-bubble text-foreground hover:bg-chart-1/80 px-4 py-2 rounded-full ml-2"
-        >
-          {newMessage.length > 0 ? (
-            <SendHorizonal className="w-5 h-5" />
-          ) : (
-            <Plus className="w-5 h-5" />
-          )}
-        </Button>
-      </div>
+      <MessageInput
+        repliedMessage={repliedMessage}
+        setRepliedMessage={changeRepliedMessage}
+        value={newMessage}
+        changeValue={setNewMessage}
+        handleSend={send}
+      />
 
       {/* Update Message Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
