@@ -52,7 +52,11 @@ const Chat: React.FC<ChatProps> = ({
 
   // Scroll to bottom when messages update
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!messagesEndRef.current) {
+      console.warn('End not found');
+      return;
+    }
+    messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [messages, reply]);
   
   const send = () => {
@@ -144,9 +148,8 @@ const Chat: React.FC<ChatProps> = ({
           </div>
         );
         })}
-        
+        <div ref={messagesEndRef} />
       </div>
-      <div ref={messagesEndRef} />
       {/* Input Section */}
       <MessageInput
         repliedMessage={reply}

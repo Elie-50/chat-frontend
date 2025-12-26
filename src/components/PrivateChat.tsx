@@ -14,7 +14,7 @@ interface PrivateChatProps {
 
 const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
   const { accessToken, user } = useAuthStore();
-  const { user: recipient, findUser } = useSearchStore();
+  const { user: recipient, findUser, setUser } = useSearchStore();
   const { 
     messages, 
     newMessage, 
@@ -44,7 +44,11 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
     if (accessToken) {
       findUser(recipientId);
     }
-  }, [recipientId, findUser, accessToken]);
+
+    return () => {
+      setUser(null);
+    }
+  }, [recipientId, findUser, accessToken, setUser]);
 
   useEffect(() => {
     if (!accessToken) return;

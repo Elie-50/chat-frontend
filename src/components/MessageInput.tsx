@@ -3,6 +3,7 @@ import { InputGroup, InputGroupButton, InputGroupTextarea } from "./ui/input-gro
 import type { Message } from "@/store/chatStore";
 import { Button } from "./ui/button";
 import { stringToColor } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useMobile";
 
 type MessgeInputProps = {
 	value: string;
@@ -12,8 +13,10 @@ type MessgeInputProps = {
 	setRepliedMessage: (message: Message | null) => void;
 }
 function MessageInput({ value, changeValue, handleSend, repliedMessage, setRepliedMessage }: MessgeInputProps) {
+	const isMobile = useIsMobile();
 	const handleKeyPressed = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (e.key === "Enter" && !e.shiftKey) {
+		if (e.key === "Enter" && !e.shiftKey && !isMobile) {
+			e.preventDefault();
       handleSend();
     }
 	}

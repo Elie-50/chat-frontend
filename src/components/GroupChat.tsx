@@ -27,7 +27,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
     totalPages,
     setTotalPages
   } = useChatStore();
-  const { findGroupData, selectedGroup } = useGroupStore();
+  const { findGroupData, selectedGroup, clearSelectedGroup } = useGroupStore();
 
   const socketRef = useRef<Socket | null>(null);
   const [updatingMessageId, setUpdatingMessageId] = useState<string | null>(null);
@@ -43,7 +43,11 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
     if (accessToken && conversationId) {
       findGroupData(conversationId)
     }
-  }, [accessToken, findGroupData, conversationId])
+
+    return () => {
+      clearSelectedGroup();
+    }
+  }, [accessToken, findGroupData, conversationId, clearSelectedGroup])
 
   useEffect(() => {
     if (!accessToken) return;

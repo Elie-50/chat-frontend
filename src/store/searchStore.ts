@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { api } from "@/lib/api";
 import type { AxiosError } from "axios";
-import type { User } from "@/types/auth";
 
 export interface SearchUser {
 	_id: string;
@@ -44,10 +43,11 @@ interface SearchState {
 	result: Result;
 	error: string | null;
 	loading: boolean;
-	user: Omit<User, 'email'> | null;
+	user: Friend | null;
 	friendsSearch: FriendsResult,
 
 	search: (payload: SearchPayload) => Promise<void>;
+	setUser: (payload: Friend | null) => void;
 	clearSearchState: () => void;
 	findUser: (_id: string) => void;
 	updateUserFollowStatus: (_id: string, newFollowStatus: boolean) => void;
@@ -65,6 +65,10 @@ export const useSearchStore = create<SearchState>((set) => ({
 		totalPages: 0,
 		currentPage: 1,
 		friends: []
+	},
+
+	setUser: (payload) => {
+		set({ user: payload });
 	},
 
 	search: async (payload: SearchPayload) => {
@@ -92,7 +96,7 @@ export const useSearchStore = create<SearchState>((set) => ({
 		try {
 			set({ loading: true, error: null })
 
-			const res = await api.get<Omit<User, 'email'>>(`/users/${_id}`);
+			const res = await api.get<Friend>(`/users/${_id}`);
 
 			set({ user: res.data, loading: false });
 		} catch (error) {

@@ -36,6 +36,7 @@ interface GroupState {
 
 	fetchGroups: (payload: SearchGroupsPayload) => Promise<void>;
 	createGroup: (payload: { name: string }) => Promise<void>;
+	clearSelectedGroup: () => void;
 	updateGroup: (id: string, payload: { name: string }) => Promise<void>;
 	findGroupData: (id: string) => Promise<void>;
 	addMemberToGroup: (payload: { conversationId: string, memberId: string }) => Promise<void>;
@@ -47,6 +48,10 @@ export const useGroupStore = create<GroupState>((set) => ({
 	error: null,
 	groups: null,
 	selectedGroup: null,
+
+	clearSelectedGroup: () => {
+		set({ selectedGroup: null });
+	},
 
 	fetchGroups: async (payload) => {
 		try {

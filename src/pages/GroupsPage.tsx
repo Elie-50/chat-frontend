@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
 function GroupsPage() {
-	const { fetchGroups, groups } = useGroupStore();
+	const { fetchGroups, groups, clearSelectedGroup } = useGroupStore();
 	const { accessToken } = useAuthStore();
 
 	useEffect(() => {
@@ -17,6 +17,10 @@ function GroupsPage() {
 			fetchGroups({ page: 1, size: 20 });
 		}
 	}, [fetchGroups, accessToken])
+
+  useEffect(() => {
+    clearSelectedGroup();
+  }, [clearSelectedGroup])
 	
 	return (
 		<div>

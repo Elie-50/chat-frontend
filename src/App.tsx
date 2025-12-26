@@ -17,20 +17,22 @@ function App() {
     <>
       <Router>
         <Navbar />
-        <Routes>
-          <Route path='/' element={<Homepage />} />
-          <Route path='/auth' element={<AuthPage />} />
-          <Route path='terms-of-service' element={<TermsOfService />} />
-          <Route path='/privacy-policy' element={<PrivacyPolicy />} />
-          <Route path='/search' element={<SearchPage />} />
-          <Route path='/private-chat/:recipientId' element={<PrivateChatPage />} />
-          <Route path='/groups' element={<GroupsPage />} />
-          <Route path='/groups/new' element={<GroupFormPage />} />
-          <Route path='/groups/edit/:groupId' element={<GroupFormPage />} />
-          <Route path='/group-chat/:conversationId' element={<GroupChatPage />} />
+        <main className='mt-20'>
+          <Routes>
+            <Route path='/' element={<Homepage />} />
+            <Route path='/auth' element={<AuthPage />} />
+            <Route path='terms-of-service' element={<TermsOfService />} />
+            <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+            <Route path='/search' element={<SearchPage />} />
+            <Route path='/private-chat/:recipientId' element={<PrivateChatPage />} />
+            <Route path='/groups' element={<GroupsPage />} />
+            <Route path='/groups/new' element={<GroupFormPage />} />
+            <Route path='/groups/edit/:groupId' element={<GroupFormPage />} />
+            <Route path=' ' element={<GroupChatPage />} />
 
-          <Route path='*' element={<NotFound />} />
-        </Routes>
+            <Route path='*' element={<NotFound />} />
+          </Routes>
+        </main>
       </Router>
     </>
   )
