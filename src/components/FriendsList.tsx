@@ -5,6 +5,7 @@ import { MessageCircleIcon, UserIcon } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
+import LastSeen from "./LastSeen";
 
 export default function FriendsList() {
 	const { friendsSearch, fetchFriends } = useSearchStore();
@@ -38,9 +39,12 @@ export default function FriendsList() {
 							key={friend._id}
 							className="flex items-center justify-between p-3 border rounded-lg shadow-sm hover:bg-input"
 						>
-							<div className="flex flex-row">
-								<UserIcon className="w-5 h-5 text-gray-500 mr-2" />
-								<span className="font-medium">{friend.username}</span>
+							<div className="flex flex-col">
+								<div className="flex flex-row">
+									<UserIcon className="w-5 h-5 text-gray-500 mr-2" />
+									<span className="font-medium">{friend.username}</span>
+								</div>
+								<LastSeen user={friend} />
 							</div>
 
 							<div className="flex justify-end">

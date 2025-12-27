@@ -6,9 +6,11 @@ export interface SearchUser {
 	_id: string;
 	username: string;
 	isFollowing: boolean;
+	isOnline?: boolean;
+	lastSeen?: Date;
 }
 
-type Friend = Omit<SearchUser, 'isFollowing'>;
+export type Friend = Omit<SearchUser, 'isFollowing'>;
 
 export interface FriendsResult {
 	totalFriends: number;
@@ -80,6 +82,7 @@ export const useSearchStore = create<SearchState>((set) => ({
 			});
 
 			const data = res.data;
+			console.log(data);
 
 			set({ loading: false, error: null, result: data });
 		} catch (error) {

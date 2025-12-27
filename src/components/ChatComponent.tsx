@@ -7,10 +7,13 @@ import { useChatStore, type Message } from '@/store/chatStore';
 import { useEffect, useRef } from 'react';
 import MessageInput from './MessageInput';
 import { cn } from '@/lib/utils';
+import type { Friend } from '@/store/searchStore';
+import LastSeen from './LastSeen';
 
 interface ChatProps {
 	_id: string,
   title: string;
+	recipient?: Friend | null,
   admin?: string;
 	loadEarlierMessages: () => void;
 	messages: Message[];
@@ -32,6 +35,7 @@ interface ChatProps {
 const Chat: React.FC<ChatProps> = ({ 
 	_id,
 	title,
+	recipient,
   admin,
 	loadEarlierMessages,
 	messages,
@@ -83,9 +87,12 @@ const Chat: React.FC<ChatProps> = ({
   return (
     <div className="flex flex-col w-full max-w-5xl min-h-[85vh] mx-auto shadow-md rounded-lg p-4 mt-2 bg-card h-auto sm:h-125 md:h-150">
       {/* Fixed Header */}
-      <div className="flex justify-center items-center sticky top-0 bg-card z-10 p-4 shadow-md rounded-lg">
+      <div className="flex justify-center items-center sticky top-10 bg-card z-10 p-4 shadow-md rounded-lg">
         <h2 className="text-lg font-semibold text-foreground text-center">
-          <span>{title}</span>
+          <div>{title}</div>
+					{recipient && (
+						<LastSeen user={recipient} />
+					)}
         </h2>
       </div>
 

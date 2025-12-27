@@ -36,3 +36,33 @@ export function stringToColor(str: string) {
 
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
+
+export function formatLastSeen(date?: Date): string {
+	if (!date) return 'Unknown';
+	const d = new Date(date);
+	const now = new Date(); 
+	// Helper to format time as hh:mm:ss am/pm
+	const timeString = d.toLocaleTimeString('en-US', {
+		hour: 'numeric',
+		minute: '2-digit',
+		second: '2-digit',
+		hour12: true
+	});
+	// Normalize dates to midnight for comparison 
+	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); 
+	const yesterday = new Date(today);
+	yesterday.setDate(today.getDate() - 1);
+	const target = new Date(d.getFullYear(), d.getMonth(), d.getDate()); 
+	if (target.getTime() === today.getTime()) {
+		return `Today at ${timeString}`;
+	} else if (target.getTime() === yesterday.getTime()) {
+		return `Yesterday at ${timeString}`;
+	} else {
+		const dateString = d.toLocaleDateString('en-US', {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric'
+		});
+		return `${dateString} at ${timeString}`;
+	}
+}

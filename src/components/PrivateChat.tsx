@@ -171,6 +171,7 @@ const PrivateChat: React.FC<PrivateChatProps> = ({ recipientId }) => {
     <Chat 
       _id={recipientId}
       title={recipient?.username || 'Private chat'}
+			recipient={recipient}
       loadEarlierMessages={loadEarlierMessages}
       newMessage={newMessage}
       setNewMessage={setNewMessage}

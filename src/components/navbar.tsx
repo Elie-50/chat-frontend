@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { LogOut, Moon, Sun } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import Notifications from './Notifications'
+import OnlineStateTracker from './OnlineStateTracker'
 
 type Theme = 'dark' | 'light'
 
@@ -95,6 +96,7 @@ export const Navbar = () => {
             <LogOut className="h-6 w-6 text-muted-foreground rotate-180" />
           </button>
           <Notifications />
+					<OnlineStateTracker />
         </div>
       </div>
     </nav>

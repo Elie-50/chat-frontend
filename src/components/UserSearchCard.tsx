@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import type { SearchUser } from "@/store/searchStore";
 import { useFollowStore } from "@/store/followStore";
 import { useNavigate } from "react-router-dom";
+import LastSeen from "./LastSeen";
 
 type Props = {
 	user: SearchUser;
@@ -31,8 +32,7 @@ function UserSearchCard({ user }: Props) {
 					<span onClick={goToPrivateChat} className="text-sm font-medium hover:cursor-pointer hover:underline">
 						{user.username}
 					</span>
-					{/* Optional secondary text */}
-					<span className="text-xs text-muted-foreground">@{user.username}</span>
+					<LastSeen user={user} />
 				</div>
 			</div>
 
