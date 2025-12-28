@@ -42,7 +42,7 @@ function MessageInput({ handleSend, repliedMessage, setRepliedMessage }: MessgeI
 							const [first, second, ...rest] = others;
 							return (
 								<span>
-									{first.username}, {second.username} and {rest.length} others are typing...
+									{first.username}, {second.username} and {rest.length} { rest.length === 1 ? 'other' : 'others'} are typing...
 								</span>
 							);
 						}

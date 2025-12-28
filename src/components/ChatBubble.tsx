@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo } from "react";
 import { useLongPress } from "@/hooks/useLongPress";
 import { useAuthStore } from "@/store/authStore";
-import { Ban, CornerDownLeft } from "lucide-react";
+import { Ban, ChevronDown, CornerDownLeft } from "lucide-react";
 import { useChatStore, type Message } from "@/store/chatStore";
 import { cn, scrollMessageIntoView, stringToColor } from "@/lib/utils";
 import React from "react";
@@ -131,7 +131,7 @@ const ChatBubble = ({
 			>
 				<div
 					className={`relative rounded-xl px-4 py-3 max-w-[85%] lg:max-w-md text-foreground
-					${isOwnMessage ? "bg-bubble " : "bg-input"}
+					${isOwnMessage ? "bg-bubble-100" : "bg-bubble"}
 					${isGrouped ? "mb-0" : "mb-1"}
 					transition-transform duration-150
 					group select-none touch-pan-y`}
@@ -153,8 +153,8 @@ const ChatBubble = ({
 								isOwnMessage ? "right-0" : "left-0"
 							} w-0 h-0 border-t-10 border-t-transparent ${
 								isOwnMessage
-									? "border-l-10 border-l-bubble"
-									: "border-r-10 border-r-transparent"
+									? "border-l-10 border-l-bubble-100"
+									: "border-r-10 border-r-bubble"
 							}`}
 						/>
 					)}
@@ -180,6 +180,18 @@ const ChatBubble = ({
 							setMenuOpen={() => { setSelectedMessage(null)}}
 						/>
 					)}
+
+					{/* Three-dot button (only on large screens, visible on hover) */}
+					{!isDeleted && (
+						<button
+							type="button"
+							onClick={() => setSelectedMessage(message)}
+							className="absolute top-1 right-1 hidden lg:flex items-center justify-center p-1 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 group-hover:cursor-pointer transition-opacity"
+						>
+							<span className="sr-only">Options</span>
+							<ChevronDown className="w-5 h-5" />
+							</button>
+						)}
 
 					{selectedMessage?._id === message._id && (
           <div
@@ -215,7 +227,7 @@ const ChatBubble = ({
 												{message.reply.sender.username}
 											</span>
 										</p>
-										<p className="mt-1">{message.reply.content}</p>
+										<p className="mt-1 truncate max-w-xs">{message.reply.content}</p>
 									</div>
 								)}
 								{/* Actual content */}
@@ -225,10 +237,15 @@ const ChatBubble = ({
 							</div>
 						)}
 
-						<span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-							{message.modification === "Edited" && <span>Edited</span>}
-							<span>{formattedDate}</span>
+						<span className="ml-auto flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap">
+							{message.modification === "Edited" && (
+								<span className="italic">Edited</span>
+							)}
+							<span className="flex items-center gap-1">
+								{formattedDate}
+							</span>
 						</span>
+
 					</div>
 				</div>
 			</div>
