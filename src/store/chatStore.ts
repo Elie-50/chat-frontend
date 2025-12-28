@@ -19,6 +19,14 @@ export interface Message {
   }
 }
 
+export type TypingUser = {
+	_id: string;
+	username: string;
+	isTyping: false;
+}
+
+export type CurrentlyTyping = Omit<TypingUser, 'isTyping'>;
+
 export interface ResultPagination {
   data: Message[];
   page: number;
@@ -32,10 +40,15 @@ interface ChatStore {
   newMessage: string;
   socket: Socket | null;
   totalPages: number;
+	page: number;
   reply: Message | null | undefined;
-  
+	currentlyTyping: Omit<TypingUser, 'isTyping'>[];
+	selectedMessage: Message | null;
+
+	setSelectedMessage: (message: Message | null) => void;
   setReply: (message: Message | null | undefined) => void;
   setTotalPages: (tp: number) => void;
+	setPage: (n: number) => void;
   setMessages: (messages: Message[] | ((prev: Message[]) => Message[]), prepend?: boolean) => void;
   clearPreviousMessages: () => void;
   setNewMessage: (message: string) => void;
@@ -44,6 +57,8 @@ interface ChatStore {
   handleUpdate: (messageId: string, content: string, eventName: string) => void;
   setSocket: (socket: Socket | null) => void;
   clearNewMessage: () => void;
+
+	updateCurrentlyTyping: (payload: TypingUser) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -52,34 +67,40 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   socket: null,
   totalPages: 0,
   reply: undefined,
+	currentlyTyping: [],
+	page: 0,
+	selectedMessage: null,
 
   setReply: (message) => {
     set({ reply: message });
   },
 
+	setSelectedMessage: (message) => {
+		set({ selectedMessage: message })
+	},
   setTotalPages: (tp) => {
     set({ totalPages: tp });
   },
+
+	setPage: (n) => {
+    set({ page: n });
+  },
   
   setMessages: (messages, prepend = false) => set((state) => {
-    if (typeof messages === 'function') {
-      // If the argument is a function, apply it to the previous state
-      const updatedMessages = messages(state.messages);
+    const current = state.messages;
+		const incoming = typeof messages === "function" ? messages(current) : messages;
 
-      // Ensure no duplicates by checking `_id`
-      const uniqueMessages = prepend
-        ? [...updatedMessages, ...state.messages.filter((msg) => !updatedMessages.some((newMsg) => newMsg._id === msg._id))]
-        : [...state.messages.filter((msg) => !updatedMessages.some((newMsg) => newMsg._id === msg._id)), ...updatedMessages];
+		const map = new Map(current.map((msg) => [msg._id, msg]));
 
-      return { messages: uniqueMessages };
-    } else {
-      // If it's an array, just append/prepend directly, checking for duplicates
-      const uniqueMessages = prepend
-        ? [...messages, ...state.messages.filter((msg) => !messages.some((newMsg) => newMsg._id === msg._id))]
-        : [...state.messages.filter((msg) => !messages.some((newMsg) => newMsg._id === msg._id)), ...messages];
+		for (const msg of incoming) {
+			map.set(msg._id, msg);
+		}
 
-      return { messages: uniqueMessages };
-    }
+		const uniqueMessages = prepend 
+			? [...incoming, ...Array.from(map.values()).filter((m) => !incoming.some((i) => i._id === m._id))]
+			: [...Array.from(map.values())];
+
+		return { messages: uniqueMessages };
   }),
 
   clearPreviousMessages: () => {
@@ -126,5 +147,24 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
 
     clearNewMessage();
-  }
+  },
+
+	updateCurrentlyTyping: (payload) => {
+		const { currentlyTyping } = get()
+		if (!payload.isTyping) {
+			set((state) => ({
+				currentlyTyping: state.currentlyTyping.filter((t) => t._id !== payload._id),
+			}))
+		} else {
+			if (currentlyTyping.some((t) => t._id == payload._id)) {
+				return;
+			}
+			set((state) => ({
+				currentlyTyping: [
+					{ _id: payload._id, username: payload.username },
+					...state.currentlyTyping, 
+				],
+			}))
+		}
+	},
 }));

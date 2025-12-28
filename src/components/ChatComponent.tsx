@@ -73,13 +73,6 @@ const Chat: React.FC<ChatProps> = ({
     }
   }
 
-  const scrollMessageIntoView = (messageId: string) => {
-    const messageElement = document.querySelector(`[data-id='${messageId}']`);
-    if (messageElement) {
-      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
-
   const changeRepliedMessage = (message: Message | null) => {
     setReply(message);
   }
@@ -150,7 +143,6 @@ const Chat: React.FC<ChatProps> = ({
               handleUpdate={handleUpdateClicked}
               handleDelete={deleteMessage}
               setRepliedMessage={changeRepliedMessage}
-              scrollMessageIntoView={scrollMessageIntoView}
             />
           </div>
         );
@@ -161,8 +153,6 @@ const Chat: React.FC<ChatProps> = ({
       <MessageInput
         repliedMessage={reply}
         setRepliedMessage={changeRepliedMessage}
-        value={newMessage}
-        changeValue={setNewMessage}
         handleSend={send}
       />
 

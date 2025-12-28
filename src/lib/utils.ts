@@ -66,3 +66,10 @@ export function formatLastSeen(date?: Date): string {
 		return `${dateString} at ${timeString}`;
 	}
 }
+
+export const scrollMessageIntoView = (messageId: string) => {
+	const messageElement = document.querySelector(`[data-id='${messageId}']`);
+	if (messageElement) {
+		messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
+};
