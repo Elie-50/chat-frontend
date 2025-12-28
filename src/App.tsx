@@ -28,7 +28,7 @@ function App() {
             <Route path='/groups' element={<GroupsPage />} />
             <Route path='/groups/new' element={<GroupFormPage />} />
             <Route path='/groups/edit/:groupId' element={<GroupFormPage />} />
-            <Route path=' ' element={<GroupChatPage />} />
+            <Route path='group-chat/:conversationId' element={<GroupChatPage />} />
 
             <Route path='*' element={<NotFound />} />
           </Routes>

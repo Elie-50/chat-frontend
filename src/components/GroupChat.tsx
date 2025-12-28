@@ -1,10 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { useAuthStore } from '@/store/authStore';
 import { BACKEND_URL } from '@/lib/api';
-import { useChatStore, type Message, type ResultPagination } from '@/store/chatStore';
+import { useChatStore, type Message, type ResultPagination, type TypingUser } from '@/store/chatStore';
 import Chat from './ChatComponent';
 import { useGroupStore } from '@/store/groupStore';
+import { useDebounce } from 'use-debounce';
 
 const messageAudio = new Audio('/sounds/live-chat.mp3');
 
@@ -20,20 +22,68 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
     setNewMessage, 
     handleSend, 
     setMessages, 
-    setSocket, 
+		socket,
+    setSocket,
     handleDelete,
     handleUpdate,
     clearPreviousMessages,
     totalPages,
-    setTotalPages
+		page,
+		setPage,
+		updateCurrentlyTyping,
   } = useChatStore();
   const { findGroupData, selectedGroup, clearSelectedGroup } = useGroupStore();
 
-  const socketRef = useRef<Socket | null>(null);
+  const [debouncedMessage] = useDebounce(newMessage, 300);
   const [updatingMessageId, setUpdatingMessageId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [page, setPage] = useState(1);
+	const isTypingRef = useRef(false);
   const size = 20;
+
+	useEffect(() => {
+		if (!accessToken || socket) return;
+
+    const newSocket = io(BACKEND_URL + '/group-chat', {
+      transports: ['websocket'],
+      autoConnect: true,
+      auth: { token: accessToken },
+    });
+    setSocket(newSocket);
+		setPage(1);
+
+		newSocket.emit('connect:user', { conversationId });
+	}, [accessToken, conversationId]);
+
+	// start typing
+	useEffect(() => {
+		if (!socket || !conversationId) {
+			return;
+		}
+		const hasText = newMessage.length > 0;
+		if (hasText && !isTypingRef.current) {
+			socket.emit("typing:start", { conversationId });
+			isTypingRef.current = true;
+		}
+		
+		if (!hasText && isTypingRef.current) {
+			socket.emit("typing:stop", { conversationId });
+			isTypingRef.current = false; 
+		}
+	}, [newMessage, conversationId, socket]);
+
+	// Stop typing when debounce settles
+	useEffect(() => {
+		if (!socket || !conversationId) {
+			return;
+		}
+		const hasText = newMessage.length > 0;
+		const debounceSettled = debouncedMessage === newMessage;
+		if (isTypingRef.current && (!hasText || debounceSettled)) {
+			socket.emit("typing:stop", { conversationId });
+			isTypingRef.current = false;
+		}
+	}, [debouncedMessage, newMessage, conversationId, socket]);
+
 
   useEffect(() => {
     clearPreviousMessages();
@@ -50,34 +100,7 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
   }, [accessToken, findGroupData, conversationId, clearSelectedGroup])
 
   useEffect(() => {
-    if (!accessToken) return;
-
-    const socket = io(BACKEND_URL + '/group-chat', {
-      transports: ['websocket'],
-      autoConnect: true,
-      auth: { token: accessToken },
-    });
-
-    socketRef.current = socket;
-    setSocket(socket);
-
-		if (user && user._id) {
-			// Fetch existing messages
-			socket.emit('find:group-messages', { senderId: user?._id, conversationId, page: page, size });
-		}
-
-    // Listen for messages
-    socket.on('group-messages:found', (data: ResultPagination) => {
-      console.log(data);
-			setTotalPages(data.totalPages);
-      if (page === 1) {
-        // If it's the first page, reset the messages
-        setMessages(data.data);
-      } else {
-        // Otherwise, prepend the messages
-        setMessages(data.data, true);
-      }
-    });
+		if (!socket) return;
 
     // Listen for incoming new messages
     socket.on('group-message:received', (data: { message: Message }) => {
@@ -116,6 +139,11 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
       );
     });
 
+		socket.on('typing:update', (data: TypingUser) => {
+			console.log(data);
+			updateCurrentlyTyping(data);
+		});
+
     socket.on('error:group-message', (err: { message: string }) => {
       console.error('Socket error:', err.message);
     });
@@ -123,7 +151,22 @@ const GroupChat: React.FC<GroupChatProps> = ({ conversationId }) => {
     return () => {
       socket.disconnect();
     };
-  }, [accessToken, setSocket, setMessages, page, user, conversationId, setTotalPages]);
+  }, [accessToken, conversationId, socket]);
+
+	useEffect(() => {
+		if (user && user._id && socket) {
+			// Fetch existing messages
+			socket.emit('find:group-messages', { senderId: user?._id, conversationId, page: page, size });
+		}
+	}, [socket, user, conversationId, page]);
+
+	useEffect(() => {
+		if (!socket) return;
+		 // Listen for messages
+    socket.on('group-messages:found', (data: ResultPagination) => {
+			setMessages(data.data, true);
+    });
+	}, [socket])
 
   const sendMessage = (id: string) => {
     handleSend(id, 'send:group-message');
