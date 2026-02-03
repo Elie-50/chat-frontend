@@ -1,6 +1,6 @@
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
 import { BACKEND_URL } from "@/lib/api";
-import { useAuthStore } from "@/store/authStore"
+import { useAuthStore } from "@/store/authStore";
 import { useGroupStore, type Participant } from "@/store/groupStore";
 import { useSearchStore } from "@/store/searchStore";
 import { useEffect, useRef } from "react";
@@ -13,7 +13,7 @@ type GroupNotification = {
 	group: {
 		_id: string;
 		name: string;
-	}
+	};
 };
 
 function Notifications() {
@@ -25,12 +25,12 @@ function Notifications() {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		audioRef.current = new Audio('/sounds/pop-up-notify.mp3');
+		audioRef.current = new Audio("/sounds/pop-up-notify.mp3");
 	}, []);
 
 	const playAudio = () => {
 		if (!audioRef.current) {
-			console.warn('No audio');
+			console.warn("No audio");
 			return;
 		}
 		audioRef.current.currentTime = 0;
@@ -40,37 +40,36 @@ function Notifications() {
 	useEffect(() => {
 		if (!accessToken) return;
 
-		const socket = io(BACKEND_URL + '/notifications', {
-			transports: ['websocket'],
+		const socket = io(BACKEND_URL + "/notifications", {
+			transports: ["websocket"],
 			auth: { token: accessToken },
 		});
 
 		socketRef.current = socket;
 
-		socket.emit('auth:init', {}, (res: { ok: boolean }) => {
+		socket.emit("auth:init", {}, (res: { ok: boolean }) => {
 			if (!res?.ok) {
 				socket.disconnect();
 				return;
 			}
-			console.log('Socket authenticated');
 		});
 
-		socket.on('notify:group-message', (data: GroupNotification) => {
+		socket.on("notify:group-message", (data: GroupNotification) => {
 			if (selectedGroup && selectedGroup._id === data.group._id) {
 				return;
 			}
 			toast("New Group Message", {
 				description: `${data.senderName} sent a message to group "${data.group.name}"`,
 				action: {
-					label: "Open", 
+					label: "Open",
 					onClick: () => navigate(`/group-chat/${data.group._id}`),
-				}
+				},
 			});
 
 			playAudio();
 		});
 
-		socket.on('notify:private-message', (data: { sender: Participant}) => {
+		socket.on("notify:private-message", (data: { sender: Participant }) => {
 			if (user?._id === data.sender._id) {
 				return;
 			}
@@ -79,7 +78,7 @@ function Notifications() {
 				action: {
 					label: "Open",
 					onClick: () => navigate(`/private-chat/${data.sender._id}`),
-				}
+				},
 			});
 			playAudio();
 		});
@@ -93,13 +92,9 @@ function Notifications() {
 
 	return (
 		<>
-			<Toaster 
-				position="top-right"
-				richColors
-				closeButton
-			/>
+			<Toaster position="top-right" richColors closeButton />
 		</>
-	)
+	);
 }
 
-export default Notifications
+export default Notifications;

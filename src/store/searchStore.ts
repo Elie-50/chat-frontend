@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { api } from "@/lib/api";
-import type { AxiosError } from "axios";
+import { create } from 'zustand';
+import { api } from '@/lib/api';
+import type { AxiosError } from 'axios';
 
 export interface SearchUser {
 	_id: string;
@@ -46,7 +46,7 @@ interface SearchState {
 	error: string | null;
 	loading: boolean;
 	user: Friend | null;
-	friendsSearch: FriendsResult,
+	friendsSearch: FriendsResult;
 
 	search: (payload: SearchPayload) => Promise<void>;
 	setUser: (payload: Friend | null) => void;
@@ -54,7 +54,7 @@ interface SearchState {
 	findUser: (_id: string) => void;
 	updateUserFollowStatus: (_id: string, newFollowStatus: boolean) => void;
 	toggleUserFollowStatus: (_id: string) => void;
-	fetchFriends: (payload: { size: number, page: number }) => Promise<void>;
+	fetchFriends: (payload: { size: number; page: number }) => Promise<void>;
 }
 
 export const useSearchStore = create<SearchState>((set) => ({
@@ -66,7 +66,7 @@ export const useSearchStore = create<SearchState>((set) => ({
 		totalFriends: 0,
 		totalPages: 0,
 		currentPage: 1,
-		friends: []
+		friends: [],
 	},
 
 	setUser: (payload) => {
@@ -86,29 +86,29 @@ export const useSearchStore = create<SearchState>((set) => ({
 
 			set({ loading: false, error: null, result: data });
 		} catch (error) {
-			const err = error as AxiosError<{ message?: string }>
-			
+			const err = error as AxiosError<{ message?: string }>;
+
 			set({
 				loading: false,
 				error: err.response?.data?.message ?? 'Failed to find users',
-			})
+			});
 		}
 	},
 
 	findUser: async (_id: string) => {
 		try {
-			set({ loading: true, error: null })
+			set({ loading: true, error: null });
 
 			const res = await api.get<Friend>(`/users/${_id}`);
 
 			set({ user: res.data, loading: false });
 		} catch (error) {
-			const err = error as AxiosError<{ message?: string }>
-			
+			const err = error as AxiosError<{ message?: string }>;
+
 			set({
 				loading: false,
 				error: err.response?.data?.message ?? 'Failed to find user',
-			})
+			});
 		}
 	},
 
@@ -117,7 +117,7 @@ export const useSearchStore = create<SearchState>((set) => ({
 			result: emptyResult,
 			loading: false,
 			error: null,
-		})
+		});
 	},
 
 	updateUserFollowStatus: (_id: string, newFollowStatus: boolean) => {
@@ -125,9 +125,7 @@ export const useSearchStore = create<SearchState>((set) => ({
 			result: {
 				...state.result,
 				data: state.result.data.map((user) =>
-					user._id === _id
-						? { ...user, isFollowing: newFollowStatus }
-						: user
+					user._id === _id ? { ...user, isFollowing: newFollowStatus } : user,
 				),
 			},
 		}));
@@ -138,9 +136,7 @@ export const useSearchStore = create<SearchState>((set) => ({
 			result: {
 				...state.result,
 				data: state.result.data.map((user) =>
-					user._id === _id
-						? { ...user, isFollowing: !user.isFollowing }
-						: user
+					user._id === _id ? { ...user, isFollowing: !user.isFollowing } : user,
 				),
 			},
 		}));
@@ -154,10 +150,9 @@ export const useSearchStore = create<SearchState>((set) => ({
 			});
 
 			set({ loading: false, friendsSearch: res.data });
-
 		} catch (error) {
 			const err = error as AxiosError<{ message: string }>;
 			set({ error: err.message, loading: false });
 		}
 	},
-}))
+}));

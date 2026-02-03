@@ -9,77 +9,48 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState, type FormEvent } from "react";
-import type { SignUpPayload } from "@/types/auth";
+import type { LoginPayload } from "@/types/auth";
 import { useAuthStore } from "@/store/authStore";
 import { Link, useNavigate } from "react-router-dom";
 
-export function SignupForm({
+export function LoginForm({
 	className,
 	...props
 }: React.ComponentProps<"form">) {
-	const [formData, setFormData] = useState<SignUpPayload>({
-		username: "",
+	const { loading, error, login, accessToken } = useAuthStore();
+	const navigate = useNavigate();
+	const [formData, setFormData] = useState<LoginPayload>({
 		email: "",
 		password: "",
-		confirmPassword: "",
 	});
 
-	const [passwordsMatch, setPasswordMatch] = useState<boolean>(true);
+	const handleSubmit = async (e: FormEvent) => {
+		e.preventDefault();
 
-	const navigate = useNavigate();
-
-	const { loading, error, signup, accessToken } = useAuthStore();
+		await login(formData);
+	};
 
 	useEffect(() => {
 		if (accessToken) {
 			navigate("/");
 		}
 	}, [accessToken, navigate]);
-
-	const handleSubmit = async (e: FormEvent) => {
-		e.preventDefault();
-
-		await signup(formData);
-	};
-
-	const checkPasswordMatching = () => {
-		if (
-			formData.password.length > 0 &&
-			formData.confirmPassword.length > 0 &&
-			formData.confirmPassword != formData.password
-		) {
-			setPasswordMatch(false);
-		} else {
-			setPasswordMatch(true);
-		}
-	};
-
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className={cn("flex flex-col gap-6 px-10 lg:px-20 my-10", className)}
+			className={cn(
+				"w-full flex flex-col gap-6 justify-center items-center px-10 lg:px-20",
+				className,
+			)}
 			{...props}
 		>
 			<FieldGroup>
 				<div className="flex flex-col items-center gap-1 text-center">
-					<h1 className="text-2xl font-bold">Create your account</h1>
+					<h1 className="text-2xl font-bold">Login to your account</h1>
 					<p className="text-muted-foreground text-sm text-balance">
-						Fill in the form below to create your account
+						Enter your email below to login to your account
 					</p>
 				</div>
-				<Field>
-					<FieldLabel htmlFor="name">Username</FieldLabel>
-					<Input
-						id="name"
-						type="text"
-						placeholder="JohnDoe"
-						value={formData.username}
-						onChange={(e) =>
-							setFormData({ ...formData, username: e.target.value })
-						}
-						required
-					/>
-				</Field>
 				<Field>
 					<FieldLabel htmlFor="email">Email</FieldLabel>
 					<Input
@@ -92,48 +63,26 @@ export function SignupForm({
 						}
 						required
 					/>
-					<FieldDescription>
-						We&apos;ll use this to contact you. We will not share your email
-						with anyone else.
-					</FieldDescription>
 				</Field>
 				<Field>
-					<FieldLabel htmlFor="password">Password</FieldLabel>
+					<div className="flex items-center">
+						<FieldLabel htmlFor="password">Password</FieldLabel>
+						<a
+							href="#"
+							className="ml-auto text-sm underline-offset-4 hover:underline"
+						>
+							Forgot your password?
+						</a>
+					</div>
 					<Input
 						id="password"
 						type="password"
 						value={formData.password}
-						onChange={(e) => {
-							setFormData({ ...formData, password: e.target.value });
-							setPasswordMatch(true);
-						}}
-						onBlur={checkPasswordMatching}
+						onChange={(e) =>
+							setFormData({ ...formData, password: e.target.value })
+						}
 						required
 					/>
-					<FieldDescription>
-						Must be at least 8 characters long.
-					</FieldDescription>
-				</Field>
-				<Field>
-					<FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-					<Input
-						id="confirm-password"
-						type="password"
-						value={formData.confirmPassword}
-						onChange={(e) => {
-							setPasswordMatch(true);
-							setFormData({ ...formData, confirmPassword: e.target.value });
-						}}
-						onBlur={checkPasswordMatching}
-						required
-					/>
-					{passwordsMatch ? (
-						<FieldDescription>Please confirm your password.</FieldDescription>
-					) : (
-						<FieldDescription className="text-red-500">
-							Passwords don't match.
-						</FieldDescription>
-					)}
 				</Field>
 				{error && error != "Invalid refresh token" && (
 					<p className="text-red-500 text-center font-semibold text-lg">
@@ -142,7 +91,7 @@ export function SignupForm({
 				)}
 				<Field>
 					<Button disabled={loading} type="submit">
-						Create Account
+						Login
 					</Button>
 				</Field>
 				<FieldSeparator>Or continue with</FieldSeparator>
@@ -154,10 +103,13 @@ export function SignupForm({
 								fill="currentColor"
 							/>
 						</svg>
-						Sign up with GitHub
+						Login with GitHub
 					</Button>
-					<FieldDescription className="px-6 text-center">
-						Already have an account? <Link to="/login">Sign in</Link>
+					<FieldDescription className="text-center">
+						Don&apos;t have an account?{" "}
+						<Link to="/sign-up" className="underline underline-offset-4">
+							Sign up
+						</Link>
 					</FieldDescription>
 				</Field>
 			</FieldGroup>

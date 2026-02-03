@@ -1,78 +1,81 @@
-import { Button } from "@/components/ui/button"
-import {
-  Field,
-  FieldLabel,
-} from "@/components/ui/field"
-import { useAuthStore } from "@/store/authStore"
+import { Button } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { useAuthStore } from "@/store/authStore";
 import { useEffect, useState, type FormEvent } from "react";
 import { Input } from "./ui/input";
 
 function UsernameForm() {
-  const { error, loading, updateUser, user, refreshToken } = useAuthStore()
-  const [username, setUsername] = useState<string>('');
-  const [status, setStatus] = useState<string>('');
+	const { error, loading, updateUser, user, refreshToken } = useAuthStore();
+	const [username, setUsername] = useState<string>(user?.username || "");
+	const [status, setStatus] = useState<string>("");
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 
+		if (user?.username == username) return;
+
 		await updateUser({ username });
-    if (!error) {
-      setStatus('Username updated successfully');
-    }
-	}
+		if (!error) {
+			setStatus("Username updated successfully");
+		}
+	};
 
-  useEffect(() => {
-    if (!user) {
-      refreshToken();
-    }
-  }, [user, refreshToken]);
+	useEffect(() => {
+		if (!user) {
+			refreshToken();
+		}
+	}, [user, refreshToken]);
 
-  const prompt = user?.username 
-    ? "Wanna change your name?"
-    : "Your username is blank!"
+	const prompt = user?.username
+		? "Wanna change your name?"
+		: "Your username is blank!";
 
-  return (
-    <div className="w-full max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold">{prompt}</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Please fill the form below to set your username.
-          </p>
-        </div>
+	return (
+		<div className="w-full max-w-md mx-auto">
+			<form onSubmit={handleSubmit} className="space-y-6">
+				{/* Header */}
+				<div className="text-center space-y-1">
+					<h1 className="text-2xl font-bold">{prompt}</h1>
+					<p className="text-sm text-gray-600 dark:text-gray-400">
+						Please fill the form below to set your username.
+					</p>
+				</div>
 
-        {/* Code Input */}
-        <Field>
-          <FieldLabel htmlFor="code">Username</FieldLabel>
-          <Input
-            id="username"
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </Field>
+				{/* Code Input */}
+				<Field>
+					<FieldLabel htmlFor="code">Username</FieldLabel>
+					<Input
+						id="username"
+						type="text"
+						placeholder="Username"
+						value={username}
+						onChange={(e) => setUsername(e.target.value)}
+						required
+					/>
+				</Field>
 
-        {/* Error */}
-        {error && (
-          <p className="text-red-500 text-center font-semibold">{error}</p>
-        )}
+				{/* Error */}
+				{error && (
+					<p className="text-red-500 text-center font-semibold">{error}</p>
+				)}
 
-        {status && (
-          <p className="text-muted-foreground text-center">{status}</p>
-        )}
+				{status && !error && (
+					<p className="text-muted-foreground text-center">{status}</p>
+				)}
 
-        {/* Submit Button */}
-        <div className="flex justify-center">
-          <Button disabled={loading} type="submit" className="w-full">
-            Continue
-          </Button>
-        </div>
-      </form>
-    </div>
-  )
+				{/* Submit Button */}
+				<div className="flex justify-center">
+					<Button
+						disabled={loading || user?.username == username}
+						type="submit"
+						className="w-full"
+					>
+						Save
+					</Button>
+				</div>
+			</form>
+		</div>
+	);
 }
 
-export default UsernameForm
+export default UsernameForm;

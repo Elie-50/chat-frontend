@@ -22,8 +22,8 @@ const emptyResult: PaginatedResult = {
 	page: 1,
 	size: 10,
 	total: 0,
-	totalPages: 1
-}
+	totalPages: 1,
+};
 
 interface Payload {
 	page: number;
@@ -47,12 +47,12 @@ export const useFollowStore = create<FollowState>((set) => ({
 	error: null,
 	followingResult: emptyResult,
 	followersResult: emptyResult,
-	
+
 	followUser: async (_id: string) => {
 		try {
 			set({ loading: true, error: null });
 
-			await api.post<void>('/follow', { id: _id });
+			await api.post<void>("/follow", { id: _id });
 
 			useSearchStore.getState().toggleUserFollowStatus(_id);
 			let newF: Follow;
@@ -64,29 +64,29 @@ export const useFollowStore = create<FollowState>((set) => ({
 						if (f._id === _id) {
 							newF = f;
 						}
-						return f._id === _id ? {
-							...f,
-							isFollowing: true
-						} : f
-					}
-						
-					),
+						return f._id === _id
+							? {
+									...f,
+									isFollowing: true,
+								}
+							: f;
+					}),
 				},
 				followingResult: {
 					...state.followingResult,
-					data: [... state.followingResult.data, newF],
+					data: [...state.followingResult.data, newF],
 				},
-			}))
+			}));
 		} catch (error) {
-			const err = error as AxiosError<{ message?: string }>
-			
+			const err = error as AxiosError<{ message?: string }>;
+
 			set({
 				loading: false,
-				error: err.response?.data?.message ?? 'Failed to follow user',
-			})
+				error: err.response?.data?.message ?? "Failed to follow user",
+			});
 		}
 	},
-	
+
 	unfollowUser: async (_id: string) => {
 		try {
 			set({ loading: true, error: null });
@@ -98,25 +98,27 @@ export const useFollowStore = create<FollowState>((set) => ({
 				loading: false,
 				followingResult: {
 					...state.followingResult,
-					data: state.followingResult.data.filter((f) => f._id != _id)
+					data: state.followingResult.data.filter((f) => f._id != _id),
 				},
 				followersResult: {
 					...state.followersResult,
-					data: state.followersResult.data.map((f) => 
-						f._id === _id ? {
-							...f,
-							isFollowing: false
-						} : f
+					data: state.followersResult.data.map((f) =>
+						f._id === _id
+							? {
+									...f,
+									isFollowing: false,
+								}
+							: f,
 					),
 				},
-			}))
+			}));
 		} catch (error) {
-			const err = error as AxiosError<{ message?: string }>
-			
+			const err = error as AxiosError<{ message?: string }>;
+
 			set({
 				loading: false,
-				error: err.response?.data?.message ?? 'Failed to unfollow user',
-			})
+				error: err.response?.data?.message ?? "Failed to unfollow user",
+			});
 		}
 	},
 
@@ -124,7 +126,7 @@ export const useFollowStore = create<FollowState>((set) => ({
 		try {
 			set({ loading: true, error: null });
 
-			const res = await api.get<PaginatedResult>('/follow/me/followers', {
+			const res = await api.get<PaginatedResult>("/follow/me/followers", {
 				params: payload,
 			});
 
@@ -139,7 +141,7 @@ export const useFollowStore = create<FollowState>((set) => ({
 		try {
 			set({ loading: true, error: null });
 
-			const res = await api.get<PaginatedResult>('/follow/me/following', {
+			const res = await api.get<PaginatedResult>("/follow/me/following", {
 				params: payload,
 			});
 

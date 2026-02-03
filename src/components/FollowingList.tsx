@@ -1,9 +1,9 @@
-import { useEffect } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { useFollowStore } from "@/store/followStore";
-import { Button } from "@/components/ui/button";
-import { UserIcon, UserMinus } from "lucide-react";
-import { useAuthStore } from "@/store/authStore";
+import { useEffect } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import { useFollowStore } from '@/store/followStore';
+import { Button } from '@/components/ui/button';
+import { UserIcon, UserMinus } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 
 export default function FollowingList() {
 	const { followingResult, getFollowing, unfollowUser } = useFollowStore();
@@ -11,7 +11,10 @@ export default function FollowingList() {
 
 	const fetchMore = () => {
 		if (followingResult.page < followingResult.totalPages) {
-			getFollowing({ page: followingResult.page + 1, size: followingResult.size });
+			getFollowing({
+				page: followingResult.page + 1,
+				size: followingResult.size,
+			});
 		}
 	};
 

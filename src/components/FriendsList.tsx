@@ -1,11 +1,11 @@
-import { useEffect } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { useSearchStore } from "@/store/searchStore";
-import { MessageCircleIcon, UserIcon } from "lucide-react";
-import { useAuthStore } from "@/store/authStore";
-import { Link } from "react-router-dom";
-import { Button } from "./ui/button";
-import LastSeen from "./LastSeen";
+import { useEffect } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import { useSearchStore } from '@/store/searchStore';
+import { MessageCircleIcon, UserIcon } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { Link } from 'react-router-dom';
+import { Button } from './ui/button';
+import LastSeen from './LastSeen';
 
 export default function FriendsList() {
 	const { friendsSearch, fetchFriends } = useSearchStore();

@@ -1,5 +1,9 @@
-import { SendHorizonal, X } from "lucide-react";
-import { InputGroup, InputGroupButton, InputGroupTextarea } from "./ui/input-group";
+import { Mic, SendHorizonal, X } from "lucide-react";
+import {
+	InputGroup,
+	InputGroupButton,
+	InputGroupTextarea,
+} from "./ui/input-group";
 import { useChatStore, type Message } from "@/store/chatStore";
 import { Button } from "./ui/button";
 import { scrollMessageIntoView, stringToColor } from "@/lib/utils";
@@ -10,29 +14,32 @@ type MessgeInputProps = {
 	handleSend: () => void;
 	repliedMessage: Message | null | undefined;
 	setRepliedMessage: (message: Message | null) => void;
-}
-function MessageInput({ handleSend, repliedMessage, setRepliedMessage }: MessgeInputProps) {
+};
+function MessageInput({
+	handleSend,
+	repliedMessage,
+	setRepliedMessage,
+}: MessgeInputProps) {
 	const isMobile = useIsMobile();
 	const { currentlyTyping, newMessage, setNewMessage } = useChatStore();
 	const { user } = useAuthStore();
 	const others = currentlyTyping.filter((t) => t._id !== user?._id);
-	
+
 	const handleKeyPressed = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === "Enter" && !e.shiftKey && !isMobile) {
 			e.preventDefault();
-      handleSend();
-    }
-	}
+			handleSend();
+		}
+	};
 
 	return (
-		<div className="fixed bottom-0 left-0 p-3 rounded-t-2xl bg-background w-full m-0">
+		<div className="fixed bottom-16 lg:bottom-0 left-0 p-3 rounded-t-2xl bg-background w-full m-0">
 			{others.length > 0 && (
 				<div className="mb-2">
 					{(() => {
 						if (others.length === 1) {
-							return <span>{others[0].username} is typing...</span>
-						}
-						else if (others.length === 2) {
+							return <span>{others[0].username} is typing...</span>;
+						} else if (others.length === 2) {
 							return (
 								<span>
 									{others[0].username}, and {others[1].username} are typing...
@@ -42,7 +49,8 @@ function MessageInput({ handleSend, repliedMessage, setRepliedMessage }: MessgeI
 							const [first, second, ...rest] = others;
 							return (
 								<span>
-									{first.username}, {second.username} and {rest.length} { rest.length === 1 ? 'other' : 'others'} are typing...
+									{first.username}, {second.username} and {rest.length}{" "}
+									{rest.length === 1 ? "other" : "others"} are typing...
 								</span>
 							);
 						}
@@ -56,21 +64,21 @@ function MessageInput({ handleSend, repliedMessage, setRepliedMessage }: MessgeI
 				>
 					<div className="grow">
 						<p>
-							Repling to {" "}
-							<span 
+							Repling to{" "}
+							<span
 								className="font-bold text-muted-foreground"
-								style={{ color: stringToColor(repliedMessage.sender) ?? '#000' }}
+								style={{
+									color: stringToColor(repliedMessage.sender) ?? "#000",
+								}}
 							>
 								{repliedMessage.sender}
 							</span>
 						</p>
-						<p className="truncate max-w-xs">
-							"{repliedMessage.content}"
-						</p>
+						<p className="truncate max-w-xs">"{repliedMessage.content}"</p>
 					</div>
 					<Button
-						variant='ghost'
-						size='icon-sm'
+						variant="ghost"
+						size="icon-sm"
 						onClick={() => setRepliedMessage(null)}
 						aria-label="Remove Reply"
 					>
@@ -85,21 +93,20 @@ function MessageInput({ handleSend, repliedMessage, setRepliedMessage }: MessgeI
 					placeholder="Type a Message..."
 					onKeyDown={handleKeyPressed}
 				/>
-				<InputGroupButton 
+				<InputGroupButton
 					variant="default"
 					className="rounded-full mx-2"
-					size='icon-sm'
-					disabled={newMessage.trim().length === 0}
+					size="icon-sm"
 					onClick={handleSend}
 					onMouseDown={(e) => e.preventDefault()}
 					onTouchStart={(e) => e.preventDefault()}
 				>
-					<SendHorizonal />
+					{newMessage.trim().length === 0 ? <Mic /> : <SendHorizonal />}
 					<span className="sr-only">Send</span>
 				</InputGroupButton>
 			</InputGroup>
 		</div>
-	)
+	);
 }
 
-export default MessageInput
+export default MessageInput;

@@ -1,7 +1,7 @@
-import { BACKEND_URL } from "@/lib/api";
-import { useAuthStore } from "@/store/authStore"
-import { useEffect, useRef } from "react";
-import { io, Socket } from "socket.io-client";
+import { BACKEND_URL } from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
+import { useEffect, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 function OnlineStateTracker() {
 	const { accessToken } = useAuthStore();
@@ -20,18 +20,18 @@ function OnlineStateTracker() {
 		socket.emit('user:connected', {});
 
 		const handleUnload = () => {
-			socket.emit("user:disconnected");
+			socket.emit('user:disconnected');
 		};
 
-		window.addEventListener("beforeunload", handleUnload);
+		window.addEventListener('beforeunload', handleUnload);
 
 		return () => {
-			window.removeEventListener("beforeunload", handleUnload);
+			window.removeEventListener('beforeunload', handleUnload);
 			socket.disconnect();
 			socketRef.current = null;
-		}
+		};
 	}, [accessToken]);
 	return null;
 }
 
-export default OnlineStateTracker
+export default OnlineStateTracker;
